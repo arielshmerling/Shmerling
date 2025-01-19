@@ -1,10 +1,10 @@
 
-const app = require("./app"); // Import the configured Express app
+const app = require("./src/app.js"); // Import the configured Express app
 //const http = require("http");
-const { Database } = require('./db/database.js');
+const { Database } = require('./src/db/database.js');
 const enableWs = require('express-ws');
 const WebSocketServer = require('ws').Server;
-const gameManagerService = require("./modules/gamesManager/service");
+const gameManagerService = require("./src/modules/gamesManager/service.js");
 const wss = new WebSocketServer({ port: process.env.WSPORT });
 
 require("dotenv").config();

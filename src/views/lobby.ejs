@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+    <%- include('partials/topbar') %>
+        <script>
+            window.addEventListener("unload", (e) => {
+                let wait = document.getElementById("wait");
+                wait.style.visibility = "hidden";
+            });
+        </script>
+        <section>
+            <div>
+                <h1>Hello <%=username %>
+                </h1>
+            </div>
+
+            <div>
+                <h3>let's search for game partner:</h3>
+            </div>
+
+            <section>
+                <div class="lobbyOptionsContainers">
+                    <img src="/images/single.svg">
+                    <img src="/images/two.png">
+                    <img src="/images/brain.png">
+                    <img src="/images/practice.png">
+                </div>
+            </section>
+
+            <section>
+                <button id="SearchForGame" onclick="startSearchingForOpponenet()">
+                    Search for opponnent
+                    <span></span>
+                    <img src="/images/wait.gif" id="wait" width="30px" /></button>
+
+            </section>
+            <section>
+                <button id="SearchForGame" onclick="startAIGame()">Human Vs. AI</button>
+            </section>
+            <section>
+                <button id="SearchForGame" onclick="startPracticeGame()">Practice</button>
+            </section>
+            <section>
+                <button id="SearchForGame" onclick="navigateToGameList()">Game List</button>
+            </section>
+        </section>
+        <%- include('partials/footer') %>

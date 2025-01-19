@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --reporter=html mocha ./chess.test.js",
+    "test": "nyc --reporter=html mocha ./test/chess.test.js",
     "analysis": "npx eslint ./src /**/*.js",
     "start": "node ./src/server.js"
   },

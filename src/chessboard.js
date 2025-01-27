@@ -84,8 +84,7 @@ function startWebSockets(username, isWhite) {
         const message = JSON.parse(event.data);
 
         if (message.type == "move") {
-            if (game.GameOver)
-                return;
+            if (game.GameOver) { return; }
             console.log("opponent made a move");
             const move = message.data;
             let moveObj;
@@ -183,10 +182,10 @@ function startWebSockets(username, isWhite) {
 
             if (info == "offer rematch") {
                 displayMessage("");
-                if (gameInfo.gameType == 'OnlineGame') // Online
-                    messageBox("Opponenet offer a rematch, agree?", acceptRematch, declineRematch);
+                if (gameInfo.gameType == "OnlineGame") // Online
+                { messageBox("Opponenet offer a rematch, agree?", acceptRematch, declineRematch); }
 
-                else if (gameInfo.gameType == 'SinglePlayerGame') // One player
+                else if (gameInfo.gameType == "SinglePlayerGame") // One player
                 {
                     messageBox("New game?", acceptRematch, declineRematch);
                 }
@@ -196,12 +195,12 @@ function startWebSockets(username, isWhite) {
 
 
                 // Online
-                if (gameInfo.gameType == 'OnlineGame') {
-                    displayMessage(`Rematch offer accepted`);
+                if (gameInfo.gameType == "OnlineGame") {
+                    displayMessage("Rematch offer accepted");
                     enableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
                     document.getElementById("rematchBtn").classList.add("btnDisabled");
                 }
-                else if (gameInfo.gameType == 'SinglePlayerGame') {
+                else if (gameInfo.gameType == "SinglePlayerGame") {
                     enableButtons(["resignBtn"]);
                 }
 
@@ -214,8 +213,8 @@ function startWebSockets(username, isWhite) {
             }
 
             if (info == "rematch declined") {
-                if (gameInfo.gameType == 'OnlineGame') {
-                    displayMessage(`Rematch offer declined`);
+                if (gameInfo.gameType == "OnlineGame") {
+                    displayMessage("Rematch offer declined");
                 }
                 disableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
                 document.getElementById("rematchBtn").classList.remove("btnDisabled");
@@ -229,7 +228,7 @@ function startWebSockets(username, isWhite) {
             if (info == "draw accepted") {
 
                 const offerBy = message.isWhite ? "black" : "white";
-                displayMessage(`Draw offer accepted`);
+                displayMessage("Draw offer accepted");
                 game.drawOfferAccepted(offerBy);
                 disableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
                 document.getElementById("rematchBtn").classList.remove("btnDisabled");
@@ -239,7 +238,7 @@ function startWebSockets(username, isWhite) {
             }
 
             if (info == "draw declined") {
-                displayMessage(`Draw offer declined`);
+                displayMessage("Draw offer declined");
                 enableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
             }
 
@@ -272,7 +271,7 @@ function registerWindowEvents() {
 
     const menuButton = document.getElementById("menuButton");
     const lastMoveBtn = document.getElementById("lastMoveBtn");
-    document.addEventListener('click', (event) => {
+    document.addEventListener("click", (event) => {
         if (menuButton && !menuButton.contains(event.target)) {
             closeMenu();
         }
@@ -282,11 +281,11 @@ function registerWindowEvents() {
 
     });
 
-    document.addEventListener('contextmenu', event => {
+    document.addEventListener("contextmenu", event => {
         event.preventDefault();
     });
 
-    document.addEventListener('keydown', OnKeyPressEventHandler);
+    document.addEventListener("keydown", OnKeyPressEventHandler);
 
     registerButtonEvents();
 }
@@ -317,8 +316,7 @@ function registerButtonEvents() {
 }
 
 function onButtonMouseDown(e) {
-    if (e.target.classList.contains("btnDisabled"))
-        return;
+    if (e.target.classList.contains("btnDisabled")) { return; }
     e.target.classList.add("buttonPress");
 }
 
@@ -327,8 +325,7 @@ function onButtonMouseUp(e) {
 }
 
 function onReviewButtonMouseDown(e) {
-    if (e.target.classList.contains("btnDisabled"))
-        return;
+    if (e.target.classList.contains("btnDisabled")) { return; }
     e.target.classList.add("reviewButtonPress");
 }
 
@@ -380,8 +377,7 @@ async function startGame(isRematch) {
     }
 
     if (gameInfo.mode == "review") {
-        if (gameInfo.reviewType == "pgn")
-            currentPlayerIsWhite = true;
+        if (gameInfo.reviewType == "pgn") { currentPlayerIsWhite = true; }
         game.startNewGame(currentPlayerIsWhite);
         moveIndex = 0;
         const blackPlayerInfoDiv = document.getElementById("blackPlayerName");
@@ -395,13 +391,13 @@ async function startGame(isRematch) {
     }
     else {
         switch (gameType) {
-            case 'PracticeGame':
+            case "PracticeGame":
                 initPracticeGame(gameInfo, currentPlayerIsWhite);
                 break;
-            case 'OnlineGame':
+            case "OnlineGame":
                 initOnlineGame(gameInfo, currentPlayerIsWhite, isRematch, isRejoined);
                 break;
-            case 'SinglePlayerGame':
+            case "SinglePlayerGame":
                 initSinglePlayerGame(gameInfo, currentPlayerIsWhite, isRematch);
                 break;
 
@@ -425,8 +421,7 @@ function initPracticeGame(gameInfo) {
 function initOnlineGame(gameInfo, currentPlayerIsWhite, isRematch, isRejoined) {
     if (!isRematch && gameInfo.mode != "review") {
         startWebSockets(gameInfo.username, currentPlayerIsWhite);
-        if (currentPlayerIsWhite && !isRejoined && !isRematch)
-            putCloak();
+        if (currentPlayerIsWhite && !isRejoined && !isRematch) { putCloak(); }
     }
 
     if (currentPlayerIsWhite) {
@@ -524,7 +519,6 @@ function registerGameEvents() {
 }
 
 
-
 function updateMovesTable(moves) {
     const movesDiv = document.getElementById("movesDiv");
     movesDiv.innerHTML = "";
@@ -567,7 +561,6 @@ function updateMovesTable(moves) {
 }
 
 
-
 /**
  *  Creates the HTML DOM Elements that assemblies the Chess board.
  *
@@ -578,7 +571,7 @@ function updateMovesTable(moves) {
  */
 function createGUIBoard() {
     const div = document.getElementById("chessboard");
-    if (!div) return;
+    if (!div) { return; }
     div.innerHTML = "";
     const chessboard_horizontal_stack = document.createElement("div");
     chessboard_horizontal_stack.setAttribute("class", "chessboard_horizontal_stack");
@@ -682,7 +675,7 @@ function createBoard(isWhitePlayerView) {
  */
 function createLegend(isTop) {
     const top = (isTop) ? "top" : "";
-    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
     const legendTop = document.createElement("div");
     legendTop.setAttribute("class", "frame legend " + top);
     for (let i = 0; i < game.BOARD_COLUMNS; i++) {
@@ -884,7 +877,7 @@ function resetClocks() {
  *     resetSqaureColor()  
  */
 function resetSqaureColor() {
-    if (guiBoard[0][0] == null) return;
+    if (guiBoard[0][0] == null) { return; }
     for (let i = 0; i < game.BOARD_ROWS; i++) {
         for (let j = 0; j < game.BOARD_COLUMNS; j++) {
             const className = `square ${((i + j) % 2) === 0 ? "white" : "black"}`;
@@ -949,7 +942,6 @@ function hideMessageBox() {
     restoreButtonsState();
 
 
-
     dialogOn = false;
 }
 
@@ -984,8 +976,7 @@ async function onUpdateReceivedEventHandler(gameState) {
     updateCaptureLists(capturedPiecesList);
 
     if (gameInfo.mode != "review") {
-        if (gameInfo.gameType != 'PracticeGame')
-            gameMoves = await getGameMoves();
+        if (gameInfo.gameType != "PracticeGame") { gameMoves = await getGameMoves(); }
         updateMovesTable(gameMoves.moves);
         moveIndex = gameMoves.moves.length;
         const turnStr = "td_move" + moveIndex;
@@ -1072,8 +1063,7 @@ function findSquareDivElement(row, col) {
  *     getImageUrl(piece);
  */
 function getImageUrl(piece) {
-    if (piece)
-        return (piece.color == "white") ? whitePiecesURL[piece.pieceType] : blackPiecesURL[piece.pieceType];
+    if (piece) { return (piece.color == "white") ? whitePiecesURL[piece.pieceType] : blackPiecesURL[piece.pieceType]; }
     return null;
 
 }
@@ -1110,14 +1100,13 @@ function createPiece(url) {
     // img.setAttribute("width", 100) // default size.
     img.setAttribute("class", "draggable");
 
-    if (gameType != 'PracticeGame') {
+    if (gameType != "PracticeGame") {
         if (currentPlayerIsWhite && img.src.indexOf("black") != -1 ||
             !currentPlayerIsWhite && img.src.indexOf("white") != -1) {
             img.setAttribute("class", "nondraggable");
         }
     }
-    if (gameInfo.mode == "review")
-        img.setAttribute("class", "nondraggable");
+    if (gameInfo.mode == "review") { img.setAttribute("class", "nondraggable"); }
 
     return img;
 }
@@ -1192,7 +1181,7 @@ function updateRowOrder() {
 }
 
 function updateLegend() {
-    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
     for (let i = 0; i < game.BOARD_COLUMNS; i++) {
         const topLegendSquare = document.getElementById("col" + letters[i] + "top");
         const bottomLegendSquare = document.getElementById("col" + letters[i]);
@@ -1214,10 +1203,9 @@ function loadGameButtonEventHandler() {
 function checkEventHandler(turn) {
     alertMode = true;
     console.log(`Check! ${game.colorName(turn)} under attack`);
-    displayMessage(`Check!`);
+    displayMessage("Check!");
     const frame = document.getElementsByClassName("frame");
-    for (const el of frame)
-        el.classList.add("checkAlert");
+    for (const el of frame) { el.classList.add("checkAlert"); }
 }
 
 async function checkmateEventHandler(turn) {
@@ -1242,8 +1230,7 @@ async function drawEventHandler(reason) {
     alertMode = true;
     displayMessage(`Draw! ${reason}`);
     const frame = document.getElementsByClassName("frame");
-    for (const el of frame)
-        el.classList.add("drawAlert");
+    for (const el of frame) { el.classList.add("drawAlert"); }
     disableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
     document.getElementById("rematchBtn").classList.remove("btnDisabled");
     gameMoves = await getGameMoves();
@@ -1300,7 +1287,6 @@ function undoEventHandler(moves) {
     }
     else { animating = false; console.log("error"); }
 }
-
 
 
 async function animateMove(move) {
@@ -1364,19 +1350,18 @@ async function animateMove(move) {
 
 function startDrag(e) {
 
-    if (gameInfo.mode == "review")
-        return;
+    if (gameInfo.mode == "review") { return; }
 
-    if (window.location.pathname != "/game") return;
+    if (window.location.pathname != "/game") { return; }
 
-    if (e.target.type != "textarea" && e.target.type != "input")
-        if (e.preventDefault)
-            e.preventDefault();
+    if (e.target.type != "textarea" && e.target.type != "input") {
+        if (e.preventDefault) { e.preventDefault(); }
+    }
 
     draggedImage = e.target;
-    if (draggedImage.className != 'draggable') { return; };
+    if (draggedImage.className != "draggable") { return; };
 
-    if (gameType != 'PracticeGame' &&
+    if (gameType != "PracticeGame" &&
         currentPlayerIsWhite && draggedImage.src.indexOf("black") != -1 ||
         !currentPlayerIsWhite && draggedImage.src.indexOf("white") != -1) {
         return;
@@ -1390,15 +1375,15 @@ function startDrag(e) {
     offsetY = e.clientY;
 
     if (!draggedImage.style.left) {
-        draggedImage.style.position = 'relative';
-        draggedImage.style.left = '0px';
+        draggedImage.style.position = "relative";
+        draggedImage.style.left = "0px";
     };
     if (!draggedImage.style.top) {
-        draggedImage.style.position = 'relative';
-        draggedImage.style.top = '0px';
+        draggedImage.style.position = "relative";
+        draggedImage.style.top = "0px";
     };
 
-    draggedImage.style.zIndex = '1';
+    draggedImage.style.zIndex = "1";
 
 
     coordX = parseInt(draggedImage.style.left);
@@ -1426,9 +1411,9 @@ function onDragging(e) {
         return;
     };
     //sconsole.log("onDragging")
-    draggedImage.style.left = coordX + e.clientX - offsetX + 'px';
-    draggedImage.style.top = coordY + e.clientY - offsetY + 'px';
-    draggedImage.style.cursor = 'grabbing';
+    draggedImage.style.left = coordX + e.clientX - offsetX + "px";
+    draggedImage.style.top = coordY + e.clientY - offsetY + "px";
+    draggedImage.style.cursor = "grabbing";
 
     return false;
 }
@@ -1438,7 +1423,7 @@ async function stopDrag() {
         return;
     };
 
-    draggedImage.style.cursor = 'grab';
+    draggedImage.style.cursor = "grab";
     drag = false;
 
     targetPosition = findPosition();
@@ -1447,7 +1432,7 @@ async function stopDrag() {
         moveObj = game.makeMove(sourcePosition, targetPosition);
         lastMove = moveObj;
         switchClocks();
-        if (gameType != 'PracticeGame') {
+        if (gameType != "PracticeGame") {
             console.log("sending move:");
             console.log(moveObj);
             await sendMove(moveObj);//, targetPosition);
@@ -1468,26 +1453,21 @@ async function stopDrag() {
 }
 
 
-
 async function promotionEventHandler(turn) {
 
-    if (gameInfo.mode == "review")
-        return;
+    if (gameInfo.mode == "review") { return; }
 
-    const opponenetMove = (currentPlayerIsWhite && turn == 'black') ||
-        (!currentPlayerIsWhite && turn == 'white');
+    const opponenetMove = (currentPlayerIsWhite && turn == "black") ||
+        (!currentPlayerIsWhite && turn == "white");
 
-    if (gameType == 'SinglePlayerGame' && opponenetMove)
-        return;
+    if (gameType == "SinglePlayerGame" && opponenetMove) { return; }
 
-    if (gameType == 'OnlineGame' && opponenetMove)
-        return;
+    if (gameType == "OnlineGame" && opponenetMove) { return; }
 
     // if (gameType == 'SinglePlayerGame' && !humanMove)
     //     return // no need to show promotion dialog if promotion happaned for other non human player on server
 
-    if (autoCompletePromotion)
-        return;
+    if (autoCompletePromotion) { return; }
 
     return new Promise((resolve) => {
 
@@ -1497,7 +1477,7 @@ async function promotionEventHandler(turn) {
         showPromotionDialog((selectedPiece) => {
             lastMove.selectedPiece = selectedPiece;
             game.completePromotion(lastMove);
-            if (gameType == 'OnlineGame') {
+            if (gameType == "OnlineGame") {
                 sendMove(lastMove);
             }
             console.log("promotion completed:");
@@ -1544,14 +1524,6 @@ function showLoadGameDialog() {
 }
 
 
-
-
-
-
-
-
-
-
 function movePieceOnBoardTo(position) {
 
     const div = findSquareDivElement(position.row, position.col);
@@ -1560,10 +1532,9 @@ function movePieceOnBoardTo(position) {
         div.appendChild(draggedImage);
         draggedImage.style.left = "0px";
         draggedImage.style.top = "0px";
-        draggedImage.style.zIndex = '0';
+        draggedImage.style.zIndex = "0";
     }
 }
-
 
 
 function findPosition() {
@@ -1577,8 +1548,6 @@ function findPosition() {
     const row = Math.round((top / SquareHeight));
     return { row: row, col: col };
 }
-
-
 
 
 function removeArrow() {
@@ -1599,9 +1568,7 @@ function closeMenu() {
 function viewLastMove() {
 
 
-    if (isButtonDisabled("lastMoveBtn"))
-        return;
-
+    if (isButtonDisabled("lastMoveBtn")) { return; }
 
 
     const moves = game.Moves;
@@ -1622,7 +1589,7 @@ function viewLastMove() {
     chessboard = document.getElementById("innerBoard");
     canvas.setAttribute("width", chessboard.offsetWidth);
     canvas.setAttribute("height", chessboard.offsetWidth);
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     let x1, y1, x2, y2;
     if (lastMove.whitePlayerView == game.WhitePlayerView) {
         x1 = lastMove.source.col * squareWidth + squareWidth / 2;
@@ -1681,7 +1648,7 @@ function drawArrow(ctx, fromx, fromy, tox, toy, arrowWidth, color) {
 
 function clearArrows() {
     const canvas = document.getElementById("arrowsCanvas");
-    if (!canvas) return;
+    if (!canvas) { return; }
     canvas.style.visibility = "hidden";
 }
 
@@ -1697,7 +1664,6 @@ function closeDialogs() {
 }
 
 
-
 function OnKeyPressEventHandler(event) {
 
     if (event.key === "Escape") {
@@ -1705,57 +1671,54 @@ function OnKeyPressEventHandler(event) {
         closeDialogs();
     }
 
-    if (dialogOn)
-        return;
+    if (dialogOn) { return; }
 
-    if (event.key.toLowerCase() == 'z' && event.ctrlKey) {
+    if (event.key.toLowerCase() == "z" && event.ctrlKey) {
         menuUndo();
     }
-    if (event.key.toLowerCase() == 'u') {
+    if (event.key.toLowerCase() == "u") {
         game.forceUpdate();
     }
-    if (event.key.toLowerCase() == 'b') {
+    if (event.key.toLowerCase() == "b") {
         game.WhitePlayerView = false;
         clearArrows();
         updateRowOrder();
         updateLegend();
     }
-    if (event.key.toLowerCase() == 'w') {
+    if (event.key.toLowerCase() == "w") {
         game.WhitePlayerView = true;
         clearArrows();
         updateRowOrder();
         updateLegend();
     }
-    if (event.key.toLowerCase() == 'f') {
+    if (event.key.toLowerCase() == "f") {
         game.WhitePlayerView = !game.WhitePlayerView;
         clearArrows();
         updateRowOrder();
         updateLegend();
     }
 
-    if (event.key.toLowerCase() == 'n') {
+    if (event.key.toLowerCase() == "n") {
         // gameType = 2
         startGame();
     }
 
 
-
-    if (event.key.toLowerCase() == 'c') {
+    if (event.key.toLowerCase() == "c") {
         //    gameType = 1 //
         startGame();
     }
 
 
-
-    if (event.key.toLowerCase() == 'v' && !event.ctrlKey) {
+    if (event.key.toLowerCase() == "v" && !event.ctrlKey) {
         viewLastMove();
     }
 
-    if (event.key == 'F3') {
+    if (event.key == "F3") {
         menuLoadEventHandler();
     }
 
-    if (event.key == 'F2') {
+    if (event.key == "F2") {
         menuSaveEventHandler();
     }
 }
@@ -1765,10 +1728,8 @@ function menuLoadEventHandler() {
 }
 
 
-
-
 async function declineDraw() {
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "draw declined",
@@ -1780,17 +1741,17 @@ async function declineDraw() {
         };
         await sendMessage(message);
 
-        displayMessage(`Draw offer declined`);
+        displayMessage("Draw offer declined");
     }
 
-    displayMessage(`Draw offer declined`);
+    displayMessage("Draw offer declined");
     enableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
 
 }
 
 async function declineRematch() {
 
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "rematch declined",
@@ -1804,7 +1765,7 @@ async function declineRematch() {
 }
 
 async function moveAccepted(move) {
-    if (gameInfo.gameType == 'SinglePlayerGame') {
+    if (gameInfo.gameType == "SinglePlayerGame") {
         const message = {
             type: "info",
             info: "move accepted",
@@ -1821,7 +1782,7 @@ async function moveAccepted(move) {
 }
 
 async function acceptRematch() {
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "rematch accepted",
@@ -1836,7 +1797,7 @@ async function acceptRematch() {
 }
 
 async function acceptDraw() {
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "draw accepted",
@@ -1851,7 +1812,7 @@ async function acceptDraw() {
 
     const offerBy = currentPlayerIsWhite ? "black" : "white";
 
-    displayMessage(`Draw offer accepted`);
+    displayMessage("Draw offer accepted");
     game.drawOfferAccepted(offerBy);
 
     gameMoves = await getGameMoves();
@@ -1862,7 +1823,7 @@ async function acceptDraw() {
 }
 
 async function offerDraw() {
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "offer draw",
@@ -1874,32 +1835,29 @@ async function offerDraw() {
         };
         await sendMessage(message);
 
-        displayMessage(`Draw offer sent`);
+        displayMessage("Draw offer sent");
     }
-    else if (gameInfo.gameType == 'PracticeGame') {
+    else if (gameInfo.gameType == "PracticeGame") {
         messageBox("Opponenet sent a draw offer, accept?", acceptDraw, declineDraw);
     }
 }
 
 
 function offerCanceled() {
-    displayMessage(``);
+    displayMessage("");
 }
 
 function isButtonDisabled(button) {
     const drawButton = document.getElementById(button);
-    if (drawButton.classList.contains("btnDisabled"))
-        return true;
+    if (drawButton.classList.contains("btnDisabled")) { return true; }
     return false;
 }
 
 function menuOfferDrawEventHandler() {
 
-    if (isButtonDisabled("drawBtn"))
-        return;
+    if (isButtonDisabled("drawBtn")) { return; }
 
-    if (game.GameOver || dialogOn)
-        return;
+    if (game.GameOver || dialogOn) { return; }
 
     messageBox("Offer a Draw?", offerDraw, offerCanceled);
 }
@@ -1907,13 +1865,11 @@ function menuOfferDrawEventHandler() {
 
 async function menuRematchEventHandler() {
 
-    if (isButtonDisabled("rematchBtn"))
-        return;
+    if (isButtonDisabled("rematchBtn")) { return; }
 
-    if (!game.GameOver || dialogOn)
-        return;
+    if (!game.GameOver || dialogOn) { return; }
 
-    if (gameType == 'SinglePlayerGame' || gameType == 'OnlineGame') // AI or Online
+    if (gameType == "SinglePlayerGame" || gameType == "OnlineGame") // AI or Online
     {
         const message = {
             type: "info",
@@ -1926,7 +1882,7 @@ async function menuRematchEventHandler() {
         };
         await sendMessage(message);
 
-        displayMessage(`Rematch offer sent`);
+        displayMessage("Rematch offer sent");
         disableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
         document.getElementById("rematchBtn").classList.remove("btnDisabled");
     }
@@ -1961,7 +1917,7 @@ function restoreButtonsState() {
 
 
 async function sendOutOfTime(loser) {
-    if (gameInfo.gameType == 'SinglePlayerGame' || gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "SinglePlayerGame" || gameInfo.gameType == "OnlineGame") {
         const message = {
             type: "info",
             info: "outOfTime",
@@ -1980,8 +1936,7 @@ function disableButtons(btnList) {
 
     for (const btnName of btnList) {
         const button = document.getElementById(btnName);
-        if (button)
-            button.classList.add("btnDisabled");
+        if (button) { button.classList.add("btnDisabled"); }
     }
 }
 
@@ -1989,17 +1944,14 @@ function enableButtons(btnList) {
 
     for (const btnName of btnList) {
         const button = document.getElementById(btnName);
-        if (button)
-            button.classList.remove("btnDisabled");
+        if (button) { button.classList.remove("btnDisabled"); }
     }
 }
 
 async function menuResignEventHandler() {
-    if (isButtonDisabled("resignBtn"))
-        return;
+    if (isButtonDisabled("resignBtn")) { return; }
 
-    if (game.GameOver)
-        return;
+    if (game.GameOver) { return; }
 
     disableButtons(["resignBtn", "redoBtn", "undoBtn", "drawBtn"]);
     document.getElementById("rematchBtn").classList.remove("btnDisabled");
@@ -2030,49 +1982,40 @@ function menuSaveEventHandler() {
 }
 
 
-
 function menuUndo() {
 
-    if (isButtonDisabled("undoBtn"))
-        return;
+    if (isButtonDisabled("undoBtn")) { return; }
 
-    if (game.GameOver)
-        return;
+    if (game.GameOver) { return; }
 
-    if (dialogOn)
-        return;
+    if (dialogOn) { return; }
 
-    if (promotingMode)
-        return;
+    if (promotingMode) { return; }
 
-    if (gameInfo.gameType == 'OnlineGame') {
+    if (gameInfo.gameType == "OnlineGame") {
         sendCommand("undo");
         game.undo();
     }
-    else if (gameInfo.gameType == 'SinglePlayerGame') {
+    else if (gameInfo.gameType == "SinglePlayerGame") {
 
         if (game.Turn == "white") {
             sendCommand("undo");
         }
     }
-    else if (gameInfo.gameType == 'PracticeGame') {
+    else if (gameInfo.gameType == "PracticeGame") {
         game.undo();
     }
 }
 
 function menuRedo() {
 
-    if (isButtonDisabled("redoBtn"))
-        return;
+    if (isButtonDisabled("redoBtn")) { return; }
 
-    if (game.GameOver)
-        return;
+    if (game.GameOver) { return; }
 
-    if (dialogOn)
-        return;
+    if (dialogOn) { return; }
 
-    if (promotingMode)
-        return;
+    if (promotingMode) { return; }
 
     game.redo();
 }
@@ -2115,25 +2058,23 @@ async function postServerInfo(path, param) {
 
 async function getGameInfo(isRematch) {
     if (isRematch) {
-        return await getServerInfo('/gameInfo?id=' + gameInfo.id);
+        return await getServerInfo("/gameInfo?id=" + gameInfo.id);
     }
     else {
-        return await getServerInfo('/gameInfo');
+        return await getServerInfo("/gameInfo");
     }
 }
 
 
-
 async function setRematchGameId(newGameID) {
-    const response = await postServerInfo('/rematch', { id: newGameID });
+    const response = await postServerInfo("/rematch", { id: newGameID });
     console.log(response);
 }
 
 async function getGameMoves() {
-    const moves = await getServerInfo('/gameMoves');
+    const moves = await getServerInfo("/gameMoves");
     return moves;
 }
-
 
 
 async function sendMove(moveObj) {
@@ -2153,7 +2094,7 @@ async function sendMove(moveObj) {
 function timerToText(timer) {
     var d = new Date(1970, 0, 1);
     d.setSeconds(timer);
-    var text = d.toLocaleTimeString('eo', { hour12: false });
+    var text = d.toLocaleTimeString("eo", { hour12: false });
     return text;
 }
 
@@ -2187,8 +2128,7 @@ function startDisconnectionTimer() {
 
 function switchClocks() {
 
-    if (gameInfo.mode == "review")
-        return;
+    if (gameInfo.mode == "review") { return; }
 
     if (game.Turn == "black") {
 
@@ -2196,8 +2136,7 @@ function switchClocks() {
         whiteTurnClock.classList.add("unvisible");
         const blackTurnClock = document.getElementById("blackTurnClock");
         blackTurnClock.classList.remove("unvisible");
-        if (whiteTimer)
-            clearInterval(whiteHandle);
+        if (whiteTimer) { clearInterval(whiteHandle); }
 
         blackHandle = setInterval(() => {
             blackTimer--;
@@ -2223,8 +2162,7 @@ function switchClocks() {
         whiteTurnClock.classList.remove("unvisible");
         const blackTurnClock = document.getElementById("blackTurnClock");
         blackTurnClock.classList.add("unvisible");
-        if (blackTimer)
-            clearInterval(blackHandle);
+        if (blackTimer) { clearInterval(blackHandle); }
 
         whiteHandle = setInterval(() => {
             whiteTimer--;
@@ -2317,9 +2255,8 @@ const niceTheme = {
 };
 
 
-
 function setDefaultTheme(theme) {
-    var r = document.querySelector(':root');
+    var r = document.querySelector(":root");
     Object.entries(theme).forEach(([key, value]) => {
         r.style.setProperty(key, value);
     });
@@ -2343,7 +2280,7 @@ function moveEnd() {
                 movesTDList.forEach(td => td.classList.remove("selectedMove"));
                 const turnStr = "td_move" + moveIndex;
                 const td = document.getElementById(turnStr);
-                if (!td) return;
+                if (!td) { return; }
                 td.classList.toggle("selectedMove");
                 td.scrollIntoView({ behavior: "smooth", block: "end" });
             }
@@ -2370,8 +2307,8 @@ function movePause() {
 }
 
 function movePlay() {
-    if (animating) return;
-    if (dialogOn) return;
+    if (animating) { return; }
+    if (dialogOn) { return; }
 
     const movePlay = document.getElementById("movePlay");
     movePlay.classList.add("hide");
@@ -2393,13 +2330,12 @@ function movePlay() {
             movesTDList.forEach(td => td.classList.remove("selectedMove"));
             const turnStr = "td_move" + moveIndex;
             const td = document.getElementById(turnStr);
-            if (!td) return;
+            if (!td) { return; }
             td.classList.toggle("selectedMove");
             td.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        else
-            clearInterval(moveHandle);
+        else { clearInterval(moveHandle); }
     }, 800);
 }
 
@@ -2429,7 +2365,7 @@ async function moveStart() {
 
 async function moveNext() {
 
-    if (animating) return;
+    if (animating) { return; }
     if (moveIndex < gameMoves.moves.length) {
         const move = gameMoves.moves[moveIndex];
         showMoveForReview(move, true);
@@ -2438,14 +2374,14 @@ async function moveNext() {
         movesTDList.forEach(td => td.classList.remove("selectedMove"));
         const turnStr = "td_move" + moveIndex;
         const td = document.getElementById(turnStr);
-        if (!td) return;
+        if (!td) { return; }
         td.classList.toggle("selectedMove");
         td.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 }
 
 async function movePrev() {
-    if (animating) return;
+    if (animating) { return; }
     if (moveIndex > 0) {
         game.undo();
         moveIndex--;
@@ -2453,24 +2389,20 @@ async function movePrev() {
         movesTDList.forEach(td => td.classList.remove("selectedMove"));
         const turnStr = "td_move" + moveIndex;
         const td = document.getElementById(turnStr);
-        if (!td) return;
-        if (td) td.classList.toggle("selectedMove");
+        if (!td) { return; }
+        if (td) { td.classList.toggle("selectedMove"); }
         td.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 }
 
 async function showMoveForReview(move, animnate) {
 
-    if (!move)
-        return;
-    if (game.isResultMove(move))
-        return;
+    if (!move) { return; }
+    if (game.isResultMove(move)) { return; }
 
-    if (gameMoves.type == "pgn")
-        move = game.convertPGNMove(move);
+    if (gameMoves.type == "pgn") { move = game.convertPGNMove(move); }
 
-    if (animnate)
-        await animateMove(move);
+    if (animnate) { await animateMove(move); }
 
     game.makeMove(move.source, move.target);
     if (move.promotion) {
@@ -2506,11 +2438,12 @@ function movesExport() {
 }
 
 
-
 async function loadMove(e) {
-    if (gameInfo.gameType == 'OnlineGame' && gameInfo.mode != "review") return;
-    if (animating) return;
-    if (dialogOn) return;
+    if (gameInfo.gameType == "OnlineGame") { return; }
+    if (gameInfo.gameType == "SinglePlayerGame") { return; }
+    if (gameInfo.mode != "review") { return; }
+    if (animating) { return; }
+    if (dialogOn) { return; }
     autoCompletePromotion = true;
     resetClocks();
     game.startNewGame(currentPlayerIsWhite);
@@ -2531,7 +2464,7 @@ async function loadMove(e) {
     movesTDList.forEach(td => td.classList.remove("selectedMove"));
     const turnStr = "td_move" + moveIndex;
     const td = document.getElementById(turnStr);
-    if (!td) return;
+    if (!td) { return; }
     td.classList.add("selectedMove");
     //td.scrollIntoView({ behavior: "smooth", block: "end" });
     td.scrollIntoView({ behavior: "smooth" });
@@ -2562,11 +2495,9 @@ async function sendMessage(message) {
 }
 
 
-
 async function backToLobby() {
 
-    if (isButtonDisabled("lobbyBtn"))
-        return;
+    if (isButtonDisabled("lobbyBtn")) { return; }
 
     //todo: Add are you sure AND a resign notice
     await menuResignEventHandler();
@@ -2576,22 +2507,22 @@ async function backToLobby() {
 
 function addOptionsButtons() {
     const buttons = [
-        { id: 'rematchBtn', onclick: menuRematchEventHandler, text: Labels.REMATCH },
-        { id: 'resignBtn', onclick: menuResignEventHandler, text: Labels.RESIGN },
-        { id: 'drawBtn', onclick: menuOfferDrawEventHandler, text: Labels.DRAW },
-        { id: 'undoBtn', onclick: menuUndo, text: Labels.UNDO },
-        { id: 'redoBtn', onclick: menuRedo, text: Labels.REDO },
-        { id: 'lastMoveBtn', onclick: viewLastMove, text: Labels.LAST_MOVE },
-        { id: 'lobbyBtn', onclick: backToLobby, text: Labels.LOBBY }
+        { id: "rematchBtn", onclick: menuRematchEventHandler, text: Labels.REMATCH },
+        { id: "resignBtn", onclick: menuResignEventHandler, text: Labels.RESIGN },
+        { id: "drawBtn", onclick: menuOfferDrawEventHandler, text: Labels.DRAW },
+        { id: "undoBtn", onclick: menuUndo, text: Labels.UNDO },
+        { id: "redoBtn", onclick: menuRedo, text: Labels.REDO },
+        { id: "lastMoveBtn", onclick: viewLastMove, text: Labels.LAST_MOVE },
+        { id: "lobbyBtn", onclick: backToLobby, text: Labels.LOBBY }
     ];
 
-    const optionsSection = document.getElementById('options');
+    const optionsSection = document.getElementById("options");
 
     if (optionsSection) {
         buttons.forEach(buttonInfo => {
-            const buttonElement = document.createElement('div');
+            const buttonElement = document.createElement("div");
             buttonElement.id = buttonInfo.id;
-            buttonElement.className = 'button';
+            buttonElement.className = "button";
             buttonElement.innerText = buttonInfo.text;
             buttonElement.onclick = buttonInfo.onclick;
             optionsSection.appendChild(buttonElement);
@@ -2600,15 +2531,15 @@ function addOptionsButtons() {
 }
 
 function addMoveButton(buttonConfig) {
-    const moveButton = document.createElement('div');
+    const moveButton = document.createElement("div");
     moveButton.id = buttonConfig.id;
-    moveButton.classList.add('reviewButtons');
+    moveButton.classList.add("reviewButtons");
     if (buttonConfig.hidden) {
-        moveButton.classList.add('hide');
+        moveButton.classList.add("hide");
     }
 
     if (buttonConfig.src) {
-        const imgElement = document.createElement('img');
+        const imgElement = document.createElement("img");
         imgElement.src = buttonConfig.src;
         imgElement.height = buttonConfig.height;
         moveButton.appendChild(imgElement);
@@ -2627,16 +2558,16 @@ function addMoveButton(buttonConfig) {
 function generateMoveButtons() {
     const gameNavDiv = document.getElementById("gameNav");
     if (gameNavDiv) {
-        gameNavDiv.innerHTML = '';
+        gameNavDiv.innerHTML = "";
 
         const buttons = [
-            { id: 'moveStart', src: '/Images/start.png', height: 20, onclick: moveStart },
-            { id: 'movePrev', src: '/Images/prev.png', height: 20, onclick: movePrev },
-            { id: 'movePlay', src: '/Images/play.png', height: 16, onclick: movePlay },
-            { id: 'movePause', src: '/Images/pause.png', height: 16, onclick: movePause, hidden: true },
-            { id: 'moveNext', src: '/Images/next.png', height: 20, onclick: moveNext },
-            { id: 'moveEnd', src: '/Images/end.png', height: 20, onclick: moveEnd },
-            { id: 'movesExport', src: '/Images/export.png', height: 16, onclick: movesExport }
+            { id: "moveStart", src: "/Images/start.png", height: 20, onclick: moveStart },
+            { id: "movePrev", src: "/Images/prev.png", height: 20, onclick: movePrev },
+            { id: "movePlay", src: "/Images/play.png", height: 16, onclick: movePlay },
+            { id: "movePause", src: "/Images/pause.png", height: 16, onclick: movePause, hidden: true },
+            { id: "moveNext", src: "/Images/next.png", height: 20, onclick: moveNext },
+            { id: "moveEnd", src: "/Images/end.png", height: 20, onclick: moveEnd },
+            { id: "movesExport", src: "/Images/export.png", height: 16, onclick: movesExport }
         ];
 
         buttons.forEach(addMoveButton);
@@ -2647,8 +2578,6 @@ function generateMoveButtons() {
 const UserMessages = {
     OPPONENT_RECONNCETION_FAILED: "Opponent failed to reconnect",
 };
-
-
 
 
 const Labels = {
@@ -2665,7 +2594,6 @@ const Labels = {
     REDO: "Redo",
     LAST_MOVE: "Last Move",
     LOBBY: "Lobby",
-
 
 
 };

@@ -3,11 +3,11 @@ const session = require("express-session");
 const path = require("path");
 const app = express();
 
-app.set("view engine", 'ejs');
+app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
 
 
-app.use(session({ secret: 'notagoodsecret', resave: true, saveUninitialized: true }));
+app.use(session({ secret: "notagoodsecret", resave: true, saveUninitialized: true }));
 console.log(__dirname);
 app.use(express.static(path.join(__dirname)));
 app.use(express.static(path.join(__dirname, "src")));

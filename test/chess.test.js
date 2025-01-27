@@ -2011,7 +2011,7 @@ describe("Special cases", () => {
 //         let move = game.makeMove(source, target, "white");
 //         let brain = new Brain();
 //         let brainMove = await brain.nextMove(game);
-//         console.log("Selected move: " + game.MoveStr(brainMove) + ", score=" + brainMove.score);
+//         console.log("Selected move: " + game.getPGNMoveNotation(brainMove) + ", score=" + brainMove.score);
 
 //         //assert.ok(move.score >= 0, "wrong move");
 //     }).timeout(10000)

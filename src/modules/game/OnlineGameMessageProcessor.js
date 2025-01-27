@@ -55,7 +55,7 @@ class OnlineGameMessageProcessor extends MessageProcessor {
         if (game?.messageProcessor.infoTypeHandlers[msg.info] != null) {
             const infoHandler = game.messageProcessor.infoTypeHandlers[msg.info];
             if (infoHandler)
-                infoHandler(game, msg);
+                {infoHandler(game, msg);}
         }
     }
 
@@ -69,12 +69,12 @@ class OnlineGameMessageProcessor extends MessageProcessor {
         const move = await game.handleMove(msg.isWhite, msg.data, "player");
 
         if (move.valid) {
-            const message = { type: "info", info: 'move validated successfully', gameId: msg.gameId };
+            const message = { type: "info", info: "move validated successfully", gameId: msg.gameId };
             game.sendMessage(message, msg.isWhite);
             game.sendMoveToOpponent(msg.gameId, msg.isWhite, move);
         }
         else {
-            const message = { type: "info", info: 'move validation failed', gameId: msg.gameId };
+            const message = { type: "info", info: "move validation failed", gameId: msg.gameId };
             game.sendMessage(message, msg.isWhite);
             console.log("move validation failed");
 

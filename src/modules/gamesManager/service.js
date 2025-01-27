@@ -1,5 +1,5 @@
 
-const pgnReader = require('./pgnReader');
+const pgnReader = require("./pgnReader");
 const { ChessGame } = require("../../ChessGame");
 const { Game, State } = require("../game/model");
 
@@ -128,7 +128,7 @@ exports.findReviewGame = async (id, userName) => {
                 id,
                 whitePlayer: pgnGame.white,
                 blackPlayer: pgnGame.black,
-                gameType: 'OnlineGame',
+                gameType: "OnlineGame",
                 reviewType: "pgn",
                 moves: pgnGame.moves,
                 whitePlayerView: true,
@@ -163,7 +163,7 @@ exports.findPendingGameCreatedByMe = (gameTypeInt, userId) => {
     return games.filter(
         g => g.createdBy.userId == userId &&
             g.constructor.name == this.gameTypeToText(gameTypeInt) &&
-            g.mode != 'review' &&
+            g.mode != "review" &&
             g.status == "pending")[0];
 };
 
@@ -171,27 +171,23 @@ exports.findGameByStatus = (gameTypeInt, userId, status) => {
     return games.filter(
         g => (userInGame(g, userId)) &&
             g.constructor.name == this.gameTypeToText(gameTypeInt) &&
-            g.mode != 'review' &&
+            g.mode != "review" &&
             g.status == status)[0];
 };
-
 
 
 function userInGame(game, userId) {
     if (game) {
         if (game.whitePlayer) {
-            if (game.whitePlayer.userId == userId)
-                return true;
+            if (game.whitePlayer.userId == userId) { return true; }
         }
         if (game.blackPlayer) {
-            if (game.blackPlayer.userId == userId)
-                return true;
+            if (game.blackPlayer.userId == userId) { return true; }
         }
     }
     return false;
 
 }
-
 
 
 exports.gameTypeToText = (gameTypeInt) => {
@@ -235,9 +231,9 @@ exports.getPlayerGames = (gameDocs) => {
 
 
 exports.getPGNFiles = async () => {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const dir = path.join(__dirname, './pgn/');
+    const fs = require("fs").promises;
+    const path = require("path");
+    const dir = path.join(__dirname, "./pgn/");
     const dirents = await fs.readdir(dir, { withFileTypes: true });
     const files = await Promise.all(dirents.map(async (dirent) => {
         const res = path.resolve(dir, dirent.name);

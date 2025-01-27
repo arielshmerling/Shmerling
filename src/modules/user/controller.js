@@ -17,7 +17,7 @@ exports.showLoginPage = async (req, res) => {
 exports.logout = async (req, res) => {
     req.session.user_id = null;
     req.session.destroy();
-    res.redirect('/login'); // or home
+    res.redirect("/login"); // or home
 };
 
 exports.login = async (req, res) => {
@@ -27,16 +27,16 @@ exports.login = async (req, res) => {
         console.log("user authenticated");
         req.session.user_id = foundUser._id;
         req.session.user_name = foundUser.username;
-        res.redirect('/lobby');
+        res.redirect("/lobby");
     }
     else {
         console.log("login failed");
-        res.redirect('/login?f=error');
+        res.redirect("/login?f=error");
     }
 };
 
 exports.showRegistrationPage = async (req, res) => {
-    res.render('register');
+    res.render("register");
 };
 
 exports.register = async (req, res) => {
@@ -44,5 +44,5 @@ exports.register = async (req, res) => {
     const user = await userService.registerNewUser(username, password);
     req.session.user_id = user._id;
     req.session.user_name = username;
-    res.redirect('/lobby');
+    res.redirect("/lobby");
 };

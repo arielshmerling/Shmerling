@@ -17,7 +17,6 @@ class ChessGameState {
 
     turn = "white";
     capturedPiecesList = [];
-    //algebricNotation = "";
     lastMove = null;
     check = false;
     checkmate = false;
@@ -48,7 +47,7 @@ class ChessGame {
     #analysis = false;
     #simulation = false;
     #state = null;
-    #gameLength = 60 * 60 * 1.5;
+    #gameLength = 60 * 60 * 1.5; // default - 1.5 hours
 
     //events
     OnUpdate = null;
@@ -61,8 +60,9 @@ class ChessGame {
 
     async raiseEvent(event, param) {
         if (!this.#analysis) {
-            if (event != null)
+            if (event != null) {
                 await event(param);
+            }
         }
     }
 
@@ -76,9 +76,7 @@ class ChessGame {
         console.log("Chess Game Created");
     }
 
-
-    //getters/Setters
-
+    //Getters/Setters
 
     /**
       * Define a getter for the current turn.
@@ -88,14 +86,17 @@ class ChessGame {
         return this.#state.turn;
     }
 
+    /**
+      * returns true if the game has ended.
+      */
     get GameOver() {
         return this.#endOfGame();
     }
 
     /**
-          * Define a getter for the current game view, white view or black view.
-          * Determine if the board is flipped or not
-          */
+     * Define a getter for the current game view, white view or black view.
+     * Determine if the board is flipped or not
+     */
     get WhitePlayerView() {
         return this.#state.whitePlayerView;
     }
@@ -120,17 +121,23 @@ class ChessGame {
     }
 
     /**
-    * Get the player's timer clocks in seconds
-    * @param {int} value
+    * Get the game total length in seconds  
     */
     get GameTimeLength() {
         return this.#gameLength;
     }
 
+    /**
+    * returns true if the game is our of time  
+    */
     get OutOfTime() {
         return this.#state.outOfTime;
     }
 
+    /**
+    * update that the game is our of time  
+    * * @param {string} value - The color of the player who is out of time 
+    */
     set OutOfTime(value) {
         this.#state.outOfTime = value;
     }
@@ -163,7 +170,6 @@ class ChessGame {
         return this.#state.draw;
     }
 
-
     /**
    * 
 * Get the Draw reason of the game.
@@ -173,7 +179,11 @@ class ChessGame {
         return this.#state.drawReason;
     }
 
-
+    /**
+    * 
+    * Get the Game Over reason of the game.
+    * @returns {string} Returns the reason why the game ended
+    */
     get GameOverReason() {
         if (this.GameOver) {
 
@@ -192,7 +202,11 @@ class ChessGame {
         return "";
     }
 
-
+    /**
+    * 
+    * Get the string represents the game result (1-0, 0-1, 1/2-1/2, *).
+    * @returns {string} The game result string
+    */
     get ResultMove() {
         if (this.GameOver) {
             if (this.Checkmate) {
@@ -230,65 +244,43 @@ class ChessGame {
     }
 
     /**
- * 
-* Returns array of moves since the begining of the game
-*/
+    * 
+    * Returns array of moves since the begining of the game
+    */
     get Moves() {
         return this.#moves;
     }
 
-
-
+    /**
+     * 
+     * Returns the last move of the game
+     */
     get LastMove() {
-        if (this.#moves.length > 0)
+        if (this.#moves.length > 0) {
             return this.#moves[this.#moves.length - 1];
+        }
         return null;
     }
+
     /**
-* 
-* Returns the current game state
-*/
+    * 
+    * Returns the current game state
+    */
     get GameState() {
 
         return this.#state;
     }
 
+    /**
+    * 
+    * Returns a shorter version of the current game state
+    */
     get SavedGameState() {
 
         return this.#stripState(JSON.stringify(this.#state));
     }
 
-
-
     // public methods 
-
-
-    loadPGNGames(pgn) {
-
-        // let result = {
-        //     valid: true,
-        //     source: source,
-        //     target: target,
-        //     piece: null,
-        //     whitePlayerView: true,
-        // }
-
-        const allMoves = [];
-
-        for (const pgnMove of pgn.moves) {
-
-            const target = this.#getTargetSquare(pgnMove);
-            const source = this.#findSource(pgnMove, this.Turn);
-            const move = { source, target, pgnMove };
-            allMoves.push(move);
-
-
-            //todo: handle promotion
-
-        }
-
-        return allMoves;
-    }
 
     /**
      * Start a new game.
@@ -299,41 +291,29 @@ class ChessGame {
         this.#state.whitePlayerView = isWhitePlayerView;
         this.#initGameFlags();
         this.#initBoard();
-
         this.raiseEvent(this.OnUpdate, this.#state);
         this.#recordState();
     }
 
-
-    print() {
-
-        for (let i = 0; i < this.BOARD_ROWS; i++) {
-            let str = "";
-            for (let j = 0; j < this.BOARD_COLUMNS; j++) {
-                if (this.#state.board[i][j]) {
-                    const piece = this.#state.board[i][j].pieceType;
-                    str += (this.pieceName(piece).charAt(0) + " ");
-                }
-                else
-                    str += " ";
-            }
-            console.log(str);
-        }
-        console.log("");
-    }
-
-
+    /**
+     * Sets the state to indicate that the given player has resigned.
+     *
+     * @param {string} resignedPlayer The player who has resigned.
+     */
     resign(resignedPlayer) {
         this.#state.resigned = resignedPlayer;
     }
 
-
+    /**
+     * Accepts a draw offer made by the given player.
+     *
+     * @param {string} offeredBy The player who made the draw offer.
+     */
     drawOfferAccepted(offeredBy) {
         this.#state.draw = true;
         this.#state.drawReason = offeredBy + " player's draw offer accepted";
         this.raiseEvent(this.OnDraw, this.#state.drawReason);
     }
-
 
     /**
      * Validates a move in the game.
@@ -419,7 +399,6 @@ class ChessGame {
         // Set the final validity flag
         move.valid = isValid;
         return move;
-
     }
 
     /**
@@ -455,32 +434,31 @@ class ChessGame {
         return options;
     }
 
-
+    /**
+     * Returns a list of possible moves to the given target position.
+     *
+     * @param {object} targetPosition The target position.
+     * @example const options = possibleMovesToTarget({ row: 0, col: 1 });
+     */
     possibleMovesToTarget(targetPosition) {
 
         const options = [];
         this.#updateState();
         for (let i = 0; i < this.BOARD_ROWS; i++) {
             for (let j = 0; j < this.BOARD_COLUMNS; j++) {
-
                 const moveObj = this.validateMove({ row: i, col: j }, targetPosition, this.Turn);
                 if (moveObj.valid) {
-
                     if (moveObj.piece.pieceType == this.PAWN && this.#promotionDone(moveObj.source, moveObj.target, moveObj)) {
-
                         const queenOption = { ...moveObj }; queenOption.selectedPiece = this.QUEEN; options.push(queenOption);
                         const rookOption = { ...moveObj }; rookOption.selectedPiece = this.ROOK; options.push(rookOption);
                         const bishopOption = { ...moveObj }; bishopOption.selectedPiece = this.BISHOP; options.push(bishopOption);
                         const knightOption = { ...moveObj }; knightOption.selectedPiece = this.KNIGHT; options.push(knightOption);
                         continue;
                     }
-
                     options.push(moveObj);
                 }
-
             }
         }
-
         return options;
     }
 
@@ -491,6 +469,7 @@ class ChessGame {
     * @param {Object} source - The current position of the piece being moved (row, column).
     * @param {Object} target - The target position where the piece will be moved (row, column).
     * @return {Object} The updated game state after the move is made.
+    * @example const move = makeMove({ row: 0, col: 1 },{ row: 1, col: 1 });
     */
     makeMove(source, target) {
 
@@ -523,10 +502,6 @@ class ChessGame {
         return move;
     }
 
-
-
-
-
     /**
      * Undo a move by reverting to the previous game state.
      */
@@ -543,13 +518,14 @@ class ChessGame {
                 this.raiseEvent(this.OnUndo, this.#moves);
                 const lastMoveRemoved = this.#moves.pop();
                 this.#undoMoves.push(lastMoveRemoved);
-                //this.#updateAlgebricNotation();
             }
-            //this.#updateAlgebricNotation();
         }
         this.#recordState();
     }
 
+    /**
+    * Redo a move by reverting to the previous undo operation.
+    */
     redo() {
         const lastUndo = this.#undoList.pop(); // remove current Snapshot
         if (lastUndo) {
@@ -562,13 +538,10 @@ class ChessGame {
                     this.#moves.push(lastMoveRemoved);
                 }
                 this.raiseEvent(this.OnUpdate, this.#state);
-                //this.#updateAlgebricNotation();
             }
-            //this.#updateAlgebricNotation();
             this.#recordState();
         }
     }
-
 
     /**
      * Force an update of the game state.
@@ -576,8 +549,9 @@ class ChessGame {
      * @see OnUpdate for more information on what this function does.
      */
     forceUpdate() {
-        if (this.OnUpdate)
+        if (this.OnUpdate) {
             this.OnUpdate(this.#state);
+        }
     }
 
     /**
@@ -588,32 +562,26 @@ class ChessGame {
     completePromotion(lastMove) {
 
         lastMove.moveStr = this.getPGNMoveNotation(lastMove);
-
         this.#addPiece(lastMove.target.row, lastMove.target.col, lastMove.piece.color, lastMove.selectedPiece);
-        //Push snapshot after #promotin
         this.#state.promoting = false;
         this.#moves[this.#moves.length - 1] = lastMove;
-
-        //this.#updateAlgebricNotation();
-
-        //this.#snapshots.pop(); // ???
-
         this.#updateState();
         this.#analyzeGameStatus(lastMove);
-        if (this.OnUpdate)
+        if (this.OnUpdate) {
             this.OnUpdate(this.#state);
+        }
     }
 
-
     /** Loads a saved game state from a string representation.
-        *
-        * @param { savedStateStr } - The JSON - encoded game state to load.
-        */
+    *
+    * @param { savedStateStr } - The JSON - encoded game state to load.
+    */
     loadGame(savedStateStr) {
         const loadingState = JSON.parse(savedStateStr);
         this.#state = loadingState;
-        if (this.OnUpdate)
+        if (this.OnUpdate) {
             this.OnUpdate(this.#state);
+        }
     }
 
     /** Loads a saved game state from a string representation.
@@ -622,143 +590,32 @@ class ChessGame {
         */
     loadMoves(moves) {
         this.#moves = moves;
-        if (this.OnUpdate)
-            this.OnUpdate(this.#state);
+        if (this.OnUpdate) { this.OnUpdate(this.#state); }
     }
 
-
-    //private methods
-
-    #flipBoard() {
-        const newBoard = Array.from({ length: this.BOARD_ROWS }, () => Array(this.BOARD_COLUMNS).fill(null));
-        for (let i = 0; i < this.BOARD_ROWS; i++) {
-            for (let j = 0; j < this.BOARD_COLUMNS; j++) {
-                newBoard[i][j] = this.#state.board[this.BOARD_ROWS - 1 - i][this.BOARD_COLUMNS - 1 - j];
-            }
-        }
-
-        if (this.#state.lastMove) {
-            this.#state.lastMove.target.col = this.BOARD_COLUMNS - 1 - this.#state.lastMove.target.col;
-            this.#state.lastMove.target.row = this.BOARD_ROWS - 1 - this.#state.lastMove.target.row;
-        }
-
-        this.#state.board = newBoard;
-        this.#updateState();
-        if (this.OnUpdate)
-            this.OnUpdate(this.#state);
-    }
-
+    /**
+     * Flips a chess move by reversing its source and target squares.
+     *
+     * @param {Object} move - The chess move to flip.
+     * @return {Object} The flipped chess move.
+     */
     flipMove(move) {
-
         if (move) {
             move.target.col = this.BOARD_COLUMNS - 1 - move.target.col;
             move.target.row = this.BOARD_ROWS - 1 - move.target.row;
             move.source.col = this.BOARD_COLUMNS - 1 - move.source.col;
             move.source.row = this.BOARD_ROWS - 1 - move.source.row;
-            //    move.moveStr = this.getPGNMoveNotation(move);
-            // move.whitePlayerView = !move.whitePlayerView;
-            //todo: check other properties
         }
-
-
         return move;
-
     }
 
-    #initBoard() {
-
-        const pos = this.#getBoardViewSettings();
-
-        this.#state.board = Array.from({ length: this.BOARD_ROWS }, () => Array(this.BOARD_COLUMNS).fill(null));
-        this.#addPiece(pos.whiteRow, 0, "white", this.ROOK);
-        this.#addPiece(pos.whiteRow, 1, "white", this.KNIGHT);
-        this.#addPiece(pos.whiteRow, 2, "white", this.BISHOP);
-        this.#addPiece(pos.whiteRow, pos.queenCol, "white", this.QUEEN);
-        this.#addPiece(pos.whiteRow, pos.kingCol, "white", this.KING);
-        this.#addPiece(pos.whiteRow, 5, "white", this.BISHOP);
-        this.#addPiece(pos.whiteRow, 6, "white", this.KNIGHT);
-        this.#addPiece(pos.whiteRow, 7, "white", this.ROOK);
-
-        this.#addPiece(pos.blackRow, 0, "black", this.ROOK);
-        this.#addPiece(pos.blackRow, 1, "black", this.KNIGHT);
-        this.#addPiece(pos.blackRow, 2, "black", this.BISHOP);
-        this.#addPiece(pos.blackRow, pos.queenCol, "black", this.QUEEN);
-        this.#addPiece(pos.blackRow, pos.kingCol, "black", this.KING);
-        this.#addPiece(pos.blackRow, 5, "black", this.BISHOP);
-        this.#addPiece(pos.blackRow, 6, "black", this.KNIGHT);
-        this.#addPiece(pos.blackRow, 7, "black", this.ROOK);
-
-        for (let i = 0; i < this.BOARD_COLUMNS; i++) {
-            this.#addPiece(pos.whitePawnRow, i, "white", this.PAWN);
-            this.#addPiece(pos.blackPawnRow, i, "black", this.PAWN);
-        }
-
-    }
-
-    #addPiece(row, column, color, pieceType) {
-
-        const piece = {
-            color: color,
-            pieceType: pieceType,
-        };
-        this.#state.board[row][column] = piece;
-    }
-
-    #getBoardViewSettings() {
-
-        if (this.#state.whitePlayerView)
-            return {
-                whiteRow: 7,
-                blackRow: 0,
-                whitePawnRow: 6,
-                blackPawnRow: 1,
-                kingCol: 4,
-                queenCol: 3,
-                forward: -1,
-                ennPassantRow: 3,
-                whitePromotionRow: 0,
-                blackPromotionRow: 7
-            };
-        else
-            return {
-                whiteRow: 0,
-                blackRow: 7,
-                whitePawnRow: 1,
-                blackPawnRow: 6,
-                kingCol: 3,
-                queenCol: 4,
-                forward: 1,
-                ennPassantRow: 4,
-                whitePromotionRow: 7,
-                blackPromotionRow: 0
-            };
-    }
-
-    #initGameFlags() {
-
-
-        this.#state.turn = "white";
-        this.#state.resigned = "";
-        this.#state.checkmate = false;
-        this.#state.check = false;
-        this.#state.draw = false;
-        this.#simulation = false;
-        this.#state.promoting = false;
-        this.#state.lastMove = undefined;
-        this.#state.capturedPiecesList = [];
-        this.#state.whiteKingMoved = false;
-        this.#state.blackKingMoved = false;
-        this.#state.queensideWhiteRookMoved = false;
-        this.#state.queensideBlackRookMoved = false;
-        this.#state.kingsideWhiteRookMoved = false;
-        this.#state.kingsideBlackRookMoved = false;
-
-        this.#snapshots = [];
-        this.#moves = [];
-    }
-
+    /**
+         * Gets algebric notation 
+         * **DEPRECATED**
+        
+         */
     MoveStr(move) {
-        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
         const allMoves = [];
         if (!move) {
             console.log("what?!");
@@ -802,17 +659,18 @@ class ChessGame {
         } else if (move.draw) {
             moveString.push("= \n");
         }
-        else if (move.castling)
+        else if (move.castling) {
             if (move.kingsideCastling) {
                 // moveString.push("0-0")
                 moveString = [];
-                moveString.push(`O-O`);
+                moveString.push("O-O");
             }
             else {
                 //moveString.push("0-0-0")
                 moveString = [];
-                moveString.push(`O-O-O`);
+                moveString.push("O-O-O");
             }
+        }
 
         else if (move.check) {
             moveString.push("+");
@@ -825,6 +683,348 @@ class ChessGame {
 
         allMoves.push(moveString.join(""));
         return moveString.join("");
+    }
+
+    parsePGNMove(move, color) {
+
+        const moveRegex = /([RNBKQ])?([a-h])?([1-8])?([x])?([a-h][1-8])?([=][RNBQ])?([+#])?/gm;
+        const cols = "abcdefgh";
+        const array = [...move.matchAll(moveRegex)][0];
+        let col, row;
+        const result = {
+            moveStr: array[0],
+            piece: this.PAWN,
+        };
+
+        if (move.indexOf("O-O-O") != -1) {
+            if (color == "white") { col = 2; row = 7; }
+            else { col = 2; row = 0; }
+            result.castling = true;
+            result.queenSide = true;
+            result.piece = this.letterToPiece("K");
+            result.target = this.square(row, col);
+            result.moveStr = move;
+            result.check = move.indexOf("+") != -1;
+            result.checkmate = move.indexOf("#") != -1;
+            return result;
+        }
+        else if (move.indexOf("O-O") != -1) {
+            if (color == "white") { col = 6; row = 7; }
+            else { col = 6; row = 0; }
+            result.castling = true;
+            result.kingSide = true;
+            result.piece = this.letterToPiece("K");
+            result.target = this.square(row, col);
+            result.moveStr = move;
+            result.check = move.indexOf("+") != -1;
+            result.checkmate = move.indexOf("#") != -1;
+            return result;
+        }
+
+        else {
+            if (array[1]) { result.piece = this.letterToPiece(array[1]); }
+            if (array[2]) { col = cols.indexOf(array[2]); }
+            if (array[3]) { row = this.BOARD_ROWS - parseInt(array[3]); }
+            if (col !== undefined || row !== undefined) {
+                result.source = { row: row, col: col };
+            }
+
+            if (array[4]) { result.captrue = true; }
+            if (array[5]) { result.target = { col: cols.indexOf(array[5].charAt(0)), row: this.BOARD_ROWS - parseInt(array[5].charAt(1)) }; }
+            else { result.target = result.source; result.source = null; }
+            if (array[6]) { result.promotedTo = array[6].charAt(1); }
+            if (array[7]) {
+                if (array[7] == "+") { result.check = true; }
+                if (array[7] == "#") { result.checkmate = true; }
+            }
+            return result;
+        }
+    }
+
+    isResultMove(move) {
+        if (move.moveStr == "1/2-1/2" || move.moveStr == "0-1" || move.moveStr == "1-0" || move.moveStr == "*") { return true; }
+        return false;
+    }
+
+    convertPGNMove(pgnMove) {
+
+        const move = this.parsePGNMove(pgnMove.moveStr, pgnMove.color);
+        const source = this.#findSource(move, pgnMove.color);
+        move.source = source;
+        move.whitePlayerView = true;
+        move.valid = true;
+
+        return move;
+    }
+
+    isAmbiguousMove(move) {
+        let ambiguousInfo = null;
+        this.#analysis = true;
+        this.undo();
+        const options = this.possibleMovesToTarget(move.target);
+        const moreSpecificOptions = options.filter(option =>
+            option.piece.pieceType == move.piece.pieceType && option.piece.color == move.piece.color);
+
+        if (moreSpecificOptions.length > 1 && !moreSpecificOptions[0].promotion) {
+            ambiguousInfo = {};
+            ambiguousInfo.sameCol = moreSpecificOptions[0].source.col == moreSpecificOptions[1].source.col;
+        }
+
+        this.redo();
+        this.#analysis = false;
+
+        return ambiguousInfo;
+    }
+
+    getPGNMoveNotation(move) {
+
+        const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+        const moveString = [];
+
+        if (move.castling) {
+            return move.kingsideCastling ? "O-O" : "O-O-O";
+        }
+
+        const PIECE = 0, SOURCE_ROW = 2, SOURCE_COL = 1, CAPTURE = 3, TARGET_COL = 4, TARGET_ROW = 5, PROMOTION = 6, PROMOTION_PIECE = 7, ALERT = 8;
+
+
+        moveString[PIECE] = this.pieceToLetter(move.piece.pieceType);
+        const ambiguousInfo = this.isAmbiguousMove(move);
+        if (ambiguousInfo) {
+            if (ambiguousInfo.sameCol) {
+                moveString[SOURCE_ROW] = this.#state.whitePlayerView ?
+                    this.BOARD_ROWS - move.source.row :
+                    move.source.row + 1;
+            }
+            else {
+                moveString[SOURCE_COL] = this.#state.whitePlayerView ?
+                    letters[move.source.col] :
+                    letters[this.BOARD_COLUMNS - move.source.col - 1];
+            }
+        }
+
+        if (move.hitSquare) {
+            moveString[CAPTURE] = "x";
+            if (move.piece.pieceType == this.PAWN) {
+                moveString[SOURCE_COL] = this.#state.whitePlayerView ?
+                    letters[move.source.col] :
+                    letters[this.BOARD_COLUMNS - move.source.col - 1];
+            }
+        }
+
+
+        moveString[TARGET_COL] = this.#state.whitePlayerView ?
+            letters[move.target.col] :
+            letters[this.BOARD_COLUMNS - move.target.col - 1];
+
+        moveString[TARGET_ROW] = this.#state.whitePlayerView ?
+            this.BOARD_ROWS - move.target.row :
+            move.target.row + 1;
+
+        if (move.promotion) {
+            moveString[PROMOTION] = "=";
+            moveString[PROMOTION_PIECE] = this.pieceToLetter(move.selectedPiece);
+        }
+
+        if (move.check) {
+            moveString[ALERT] = "+";
+        }
+
+        if (move.checkmate) {
+            moveString[ALERT] = "#";
+        }
+
+        const result = moveString.join("");
+        return result;
+    }
+
+    letterToPiece(letter) {
+        switch (letter) {
+
+            case "R":
+                return this.ROOK;
+            case "N":
+                return this.KNIGHT;
+            case "B":
+                return this.BISHOP;
+            case "K":
+                return this.KING;
+            case "Q":
+                return this.QUEEN;
+            default:
+                return this.PAWN;
+        }
+    }
+
+    opponent(color) {
+        if (color == "white") { return "black"; }
+        return "white";
+    }
+
+    colorName(color) {
+        if (color == "white") { return "White"; }
+        else if (color == "black") { return "Black"; }
+        else { return "ERROR"; }
+
+
+    }
+
+    pieceName(piece) {
+
+        switch (piece) {
+            case this.PAWN:
+                return "Pawn";
+            case this.ROOK:
+                return "Rook";
+            case this.KNIGHT:
+                return "Knight";
+            case this.BISHOP:
+                return "Bishop";
+            case this.KING:
+                return "King";
+            case this.QUEEN:
+                return "Queen";
+            default:
+                return "Error";
+        }
+    }
+
+
+    pieceToLetter(piece) {
+        switch (piece) {
+
+            case this.ROOK:
+                return "R";
+            case this.KNIGHT:
+                return "N";
+            case this.BISHOP:
+                return "B";
+            case this.KING:
+                return "K";
+            case this.QUEEN:
+                return "Q";
+            default:
+                return "";
+        }
+    }
+
+    square = (i, j) => {
+        return { row: i, col: j };
+    };
+
+
+    //private methods
+
+    #flipBoard() {
+        const newBoard = Array.from({ length: this.BOARD_ROWS }, () => Array(this.BOARD_COLUMNS).fill(null));
+        for (let i = 0; i < this.BOARD_ROWS; i++) {
+            for (let j = 0; j < this.BOARD_COLUMNS; j++) {
+                newBoard[i][j] = this.#state.board[this.BOARD_ROWS - 1 - i][this.BOARD_COLUMNS - 1 - j];
+            }
+        }
+
+        if (this.#state.lastMove) {
+            this.#state.lastMove.target.col = this.BOARD_COLUMNS - 1 - this.#state.lastMove.target.col;
+            this.#state.lastMove.target.row = this.BOARD_ROWS - 1 - this.#state.lastMove.target.row;
+        }
+
+        this.#state.board = newBoard;
+        this.#updateState();
+        if (this.OnUpdate) { this.OnUpdate(this.#state); }
+    }
+
+    #initBoard() {
+
+        const pos = this.#getBoardViewSettings();
+
+        this.#state.board = Array.from({ length: this.BOARD_ROWS }, () => Array(this.BOARD_COLUMNS).fill(null));
+        this.#addPiece(pos.whiteRow, 0, "white", this.ROOK);
+        this.#addPiece(pos.whiteRow, 1, "white", this.KNIGHT);
+        this.#addPiece(pos.whiteRow, 2, "white", this.BISHOP);
+        this.#addPiece(pos.whiteRow, pos.queenCol, "white", this.QUEEN);
+        this.#addPiece(pos.whiteRow, pos.kingCol, "white", this.KING);
+        this.#addPiece(pos.whiteRow, 5, "white", this.BISHOP);
+        this.#addPiece(pos.whiteRow, 6, "white", this.KNIGHT);
+        this.#addPiece(pos.whiteRow, 7, "white", this.ROOK);
+
+        this.#addPiece(pos.blackRow, 0, "black", this.ROOK);
+        this.#addPiece(pos.blackRow, 1, "black", this.KNIGHT);
+        this.#addPiece(pos.blackRow, 2, "black", this.BISHOP);
+        this.#addPiece(pos.blackRow, pos.queenCol, "black", this.QUEEN);
+        this.#addPiece(pos.blackRow, pos.kingCol, "black", this.KING);
+        this.#addPiece(pos.blackRow, 5, "black", this.BISHOP);
+        this.#addPiece(pos.blackRow, 6, "black", this.KNIGHT);
+        this.#addPiece(pos.blackRow, 7, "black", this.ROOK);
+
+        for (let i = 0; i < this.BOARD_COLUMNS; i++) {
+            this.#addPiece(pos.whitePawnRow, i, "white", this.PAWN);
+            this.#addPiece(pos.blackPawnRow, i, "black", this.PAWN);
+        }
+
+    }
+
+    #addPiece(row, column, color, pieceType) {
+
+        const piece = {
+            color: color,
+            pieceType: pieceType,
+        };
+        this.#state.board[row][column] = piece;
+    }
+
+    #getBoardViewSettings() {
+
+        if (this.#state.whitePlayerView) {
+            return {
+                whiteRow: 7,
+                blackRow: 0,
+                whitePawnRow: 6,
+                blackPawnRow: 1,
+                kingCol: 4,
+                queenCol: 3,
+                forward: -1,
+                ennPassantRow: 3,
+                whitePromotionRow: 0,
+                blackPromotionRow: 7
+            };
+        }
+        else {
+            return {
+                whiteRow: 0,
+                blackRow: 7,
+                whitePawnRow: 1,
+                blackPawnRow: 6,
+                kingCol: 3,
+                queenCol: 4,
+                forward: 1,
+                ennPassantRow: 4,
+                whitePromotionRow: 7,
+                blackPromotionRow: 0
+            };
+        }
+    }
+
+    #initGameFlags() {
+
+
+        this.#state.turn = "white";
+        this.#state.resigned = "";
+        this.#state.checkmate = false;
+        this.#state.check = false;
+        this.#state.draw = false;
+        this.#simulation = false;
+        this.#state.promoting = false;
+        this.#state.lastMove = undefined;
+        this.#state.capturedPiecesList = [];
+        this.#state.whiteKingMoved = false;
+        this.#state.blackKingMoved = false;
+        this.#state.queensideWhiteRookMoved = false;
+        this.#state.queensideBlackRookMoved = false;
+        this.#state.kingsideWhiteRookMoved = false;
+        this.#state.kingsideBlackRookMoved = false;
+
+        this.#snapshots = [];
+        this.#moves = [];
     }
 
     async #performMove(move) {
@@ -938,7 +1138,6 @@ class ChessGame {
                     move.checkmate = true;
                     this.#state.checkmate = true;
                     this.#updateState();
-                    //this.#updateAlgebricNotation()
                     this.raiseEvent(this.OnCheckmate, this.opponent(this.Turn));
                 }
             }
@@ -954,7 +1153,6 @@ class ChessGame {
                     this.#state.draw = true;
                     this.#state.drawReason = "Stalemate";
                     this.#updateState();
-                    //this.#updateAlgebricNotation()
                     this.raiseEvent(this.OnDraw, "Stalemate");
 
                 }
@@ -970,7 +1168,6 @@ class ChessGame {
                 this.#state.draw = true;
                 this.#state.drawReason = "50 Moves";
                 this.#updateState();
-                //this.#updateAlgebricNotation()
                 this.raiseEvent(this.OnDraw, "50 Moves");
             }
         }
@@ -981,7 +1178,7 @@ class ChessGame {
                 this.#state.draw = true;
                 this.#state.drawReason = "insufficient Materials";
                 this.#updateState();
-                //this.#updateAlgebricNotation()
+
                 this.raiseEvent(this.OnDraw, "insufficient Materials");
             }
         }
@@ -994,7 +1191,6 @@ class ChessGame {
                 this.#state.draw = true;
                 this.#state.drawReason = "Threefold Repetition";
                 this.#updateState();
-                //this.#updateAlgebricNotation()
                 this.raiseEvent(this.OnDraw, "Threefold Repetition");
             }
         }
@@ -1009,10 +1205,8 @@ class ChessGame {
             this.#moves.push(lastMove);
         }
 
-        if (this.OnUpdate)
-            this.OnUpdate(this.#state);
+        if (this.OnUpdate) { this.OnUpdate(this.#state); }
     }
-
 
     #castlingMoveDone(source, target) {
         return ((source.row == target.row) && (Math.abs(source.col - target.col) == 2));
@@ -1189,8 +1383,7 @@ class ChessGame {
             this.#state.lastMove.target.row == settings.ennPassantRow &&
             this.#state.lastMove.target.col == source.col - 1
 
-        )
-            return true;
+        ) { return true; }
 
         // En passant Right
         if (source.row == settings.ennPassantRow && this.#state.board[target.row][target.col] == null &&
@@ -1202,8 +1395,7 @@ class ChessGame {
             this.#state.lastMove.piece.color == this.opponent(color) &&
             this.#state.lastMove.target.row == settings.ennPassantRow &&
             this.#state.lastMove.target.col == source.col + 1
-        )
-            return true;
+        ) { return true; }
 
         return false;
     }
@@ -1221,9 +1413,9 @@ class ChessGame {
                 // check if the move is to the right or to the left
                 if (source.col > target.col) {
                     // Making sure that each Square on the path is empty                        
-                    for (let i = source.col - 1; i > target.col; i--)
-                        if (this.#state.board[target.row][i] != null)
-                            return false;
+                    for (let i = source.col - 1; i > target.col; i--) {
+                        if (this.#state.board[target.row][i] != null) { return false; }
+                    }
 
 
                     // If the loop haven't caused exiting the , then it's OK.
@@ -1231,9 +1423,9 @@ class ChessGame {
 
                 }
                 else {
-                    for (let i = source.col + 1; i < target.col; i++)
-                        if (this.#state.board[target.row][i] != null)
-                            return false;
+                    for (let i = source.col + 1; i < target.col; i++) {
+                        if (this.#state.board[target.row][i] != null) { return false; }
+                    }
 
                     valid = true;
 
@@ -1243,16 +1435,16 @@ class ChessGame {
                 //If the movement is vertical
                 if (source.col == target.col) {
                     if (source.row > target.row) {
-                        for (let i = source.row - 1; i > target.row; i--)
-                            if (this.#state.board[i][target.col] != null)
-                                return false;
+                        for (let i = source.row - 1; i > target.row; i--) {
+                            if (this.#state.board[i][target.col] != null) { return false; }
+                        }
                         valid = true;
                     }
                     else {
 
-                        for (let i = source.row + 1; i < target.row; i++)
-                            if (this.#state.board[i][target.col] != null)
-                                return false;
+                        for (let i = source.row + 1; i < target.row; i++) {
+                            if (this.#state.board[i][target.col] != null) { return false; }
+                        }
                         valid = true;
                     }
 
@@ -1261,8 +1453,7 @@ class ChessGame {
             }
         }
 
-        if (valid)
-            return true;
+        if (valid) { return true; }
 
 
         return false;
@@ -1280,10 +1471,8 @@ class ChessGame {
 
         if (this.#state.board[target.row][target.col] == null || this.#state.board[target.row][target.col].color == this.opponent(this.Turn)) {
             if (Math.abs(target.row - source.row) == 1 && Math.abs(target.col - source.col) == 2 ||
-                Math.abs(target.row - source.row) == 2 && Math.abs(target.col - source.col) == 1)
-                return true;
-            else
-                return false;
+                Math.abs(target.row - source.row) == 2 && Math.abs(target.col - source.col) == 1) { return true; }
+            else { return false; }
         }
     }
 
@@ -1312,14 +1501,11 @@ class ChessGame {
                             //         j += (stepRow * -1);
                             // }
                             // else {
-                            if (target.col > source.col)
-                                j += (stepRow * -1);
-                            else
-                                j += stepRow;
+                            if (target.col > source.col) { j += (stepRow * -1); }
+                            else { j += stepRow; }
                             // }
 
-                            if (this.#state.board[i][j] != null)
-                                return false;
+                            if (this.#state.board[i][j] != null) { return false; }
                         }
                     }
                     else {
@@ -1330,13 +1516,10 @@ class ChessGame {
                         //**********************                            
                         for (let i = source.row + stepRow; i < target.row; i += stepRow) {
                             //if (target.row > source.row) {
-                            if (target.col > source.col)
-                                j += stepRow;
-                            else
-                                j += (stepRow * -1);
+                            if (target.col > source.col) { j += stepRow; }
+                            else { j += (stepRow * -1); }
 
-                            if (this.#state.board[i][j] != null)
-                                return false;
+                            if (this.#state.board[i][j] != null) { return false; }
                         }
                     }
                     return true;
@@ -1350,28 +1533,24 @@ class ChessGame {
         if (row < this.BOARD_ROWS &&
             row >= 0 &&
             col < this.BOARD_COLUMNS &&
-            col >= 0)
-            return true;
+            col >= 0) { return true; }
         return false;
     }
 
     #oppnnentKing(row, col) {
 
-        if (!this.#inBounds(row, col))
-            return false;
+        if (!this.#inBounds(row, col)) { return false; }
 
         if (this.#state.board[row][col] &&
             this.#state.board[row][col].pieceType == this.KING &&
-            this.#state.board[row][col].color == this.opponent(this.Turn))
-            return true;
+            this.#state.board[row][col].color == this.opponent(this.Turn)) { return true; }
         return false;
     }
 
     #validateKingMove(source, target, color) {
 
         // if there a king in the target Square
-        if (this.#state.board[target.row][target.col] && this.#state.board[target.row][target.col].pieceType == this.KING)
-            return false;
+        if (this.#state.board[target.row][target.col] && this.#state.board[target.row][target.col].pieceType == this.KING) { return false; }
 
 
         // if the original and the target Square are the same, this isn't a move - exit method  
@@ -1383,28 +1562,19 @@ class ChessGame {
 
 
         // target Square is not in the opponent king area
-        if (this.#oppnnentKing(target.row + 1, target.col + 1))
-            return false;
-        if (this.#oppnnentKing(target.row + 1, target.col))
-            return false;
-        if (this.#oppnnentKing(target.row + 1, target.col - 1))
-            return false;
-        if (this.#oppnnentKing(target.row, target.col + 1))
-            return false;
-        if (this.#oppnnentKing(target.row, target.col - 1))
-            return false;
-        if (this.#oppnnentKing(target.row - 1, target.col + 1))
-            return false;
-        if (this.#oppnnentKing(target.row - 1, target.col))
-            return false;
-        if (this.#oppnnentKing(target.row - 1, target.col - 1))
-            return false;
+        if (this.#oppnnentKing(target.row + 1, target.col + 1)) { return false; }
+        if (this.#oppnnentKing(target.row + 1, target.col)) { return false; }
+        if (this.#oppnnentKing(target.row + 1, target.col - 1)) { return false; }
+        if (this.#oppnnentKing(target.row, target.col + 1)) { return false; }
+        if (this.#oppnnentKing(target.row, target.col - 1)) { return false; }
+        if (this.#oppnnentKing(target.row - 1, target.col + 1)) { return false; }
+        if (this.#oppnnentKing(target.row - 1, target.col)) { return false; }
+        if (this.#oppnnentKing(target.row - 1, target.col - 1)) { return false; }
 
         // if(#underThreat())
 
 
-        if (this.#underThreat(this.square(target.row, target.col), this.opponent(color)))
-            return false;
+        if (this.#underThreat(this.square(target.row, target.col), this.opponent(color))) { return false; }
 
 
         if (this.#state.board[target.row][target.col] == null || this.#state.board[target.row][target.col].color == this.opponent(color)) {
@@ -1418,8 +1588,7 @@ class ChessGame {
             if ((source.row == target.row) && (Math.abs(source.col - target.col) == 2)) {
                 if ((color == "white" && !this.#state.whiteKingMoved) || (color == "black" && !this.#state.blackKingMoved)) {
 
-                    if (this.#state.check)
-                        return false;
+                    if (this.#state.check) { return false; }
 
 
                     // check rook didn't move yet
@@ -1488,8 +1657,7 @@ class ChessGame {
                     const offset = (source.col > target.col) ? 1 : -1;
                     if (this.#state.board[target.row][target.col + offset] == null) {
                         if (!this.#underThreat(target, this.opponent(color)) &&
-                            !this.#underThreat({ row: target.row, col: target.col + offset }, this.opponent(color)))
-                            return true;
+                            !this.#underThreat({ row: target.row, col: target.col + offset }, this.opponent(color))) { return true; }
                     }
                 }
             }
@@ -1504,8 +1672,7 @@ class ChessGame {
         const col = position.col;
         let underAttack = false;
 
-        if (!this.#inBounds(row, col))
-            return false;
+        if (!this.#inBounds(row, col)) { return false; }
 
         // scanning right side of the row
         for (let i = col + 1; i < 8; i++) {
@@ -1774,13 +1941,12 @@ class ChessGame {
         return underAttack;
     }
 
-
     #endOfGame() {
 
-        if (this.#state.checkmate) return true;
-        if (this.#state.draw) return true;
-        if (this.#state.resigned) return true;
-        if (this.#state.outOfTime) return true;
+        if (this.#state.checkmate) { return true; }
+        if (this.#state.draw) { return true; }
+        if (this.#state.resigned) { return true; }
+        if (this.#state.outOfTime) { return true; }
 
         return false;
     }
@@ -1798,8 +1964,7 @@ class ChessGame {
         for (let i = 0; i < this.BOARD_ROWS; i++) {
             for (let j = 0; j < this.BOARD_COLUMNS; j++) {
                 const piece = this.#state.board[i][j];
-                if (piece != null && piece.color == color && piece.pieceType == this.KING)
-                    return { row: i, col: j };
+                if (piece != null && piece.color == color && piece.pieceType == this.KING) { return { row: i, col: j }; }
             }
         }
     }
@@ -1840,9 +2005,9 @@ class ChessGame {
         }
         return retValue;
     }
-    // Simulate move by the threatening Color, and return true if Check occur, then undo
-    #canRemoveChessThreat(source, target, threateningColor) {
 
+    #canRemoveChessThreat(source, target, threateningColor) {
+        // Simulate move by the threatening Color, and return true if Check occur, then undo
         let retValue;
         const move = {
             valid: true,
@@ -1903,7 +2068,6 @@ class ChessGame {
         }
         return true;
     }
-
 
     #insufficientMaterials() {
         let count = 0;              // Counts how many non-empty Squares are present on the board        
@@ -1966,14 +2130,12 @@ class ChessGame {
 
         if (count == 4) {
             if (whiteBishop && blackBishop) {
-                if ((whiteBishopPosition.row + whiteBishopPosition.col) % 2 == (blackBishopPosition.row + blackBishopPosition.col) % 2)
-                    return true;
+                if ((whiteBishopPosition.row + whiteBishopPosition.col) % 2 == (blackBishopPosition.row + blackBishopPosition.col) % 2) { return true; }
             }
         }
 
         return false;
     }
-
 
     #threefoldRepetition() {
 
@@ -1986,8 +2148,7 @@ class ChessGame {
                 sum++;
             }
         }
-        if (sum >= 3)
-            return true;
+        if (sum >= 3) { return true; }
         return false;
     }
 
@@ -2003,82 +2164,11 @@ class ChessGame {
 
     #stripState(snapshotStr) {
         const snapshot = JSON.parse(snapshotStr);
-        //delete snapshot.algebricNotation;
         delete snapshot.capturedPiecesList;
         delete snapshot.lastMove;
         delete snapshot.fiftyMovesCounter;
         return JSON.stringify(snapshot);
 
-    }
-
-    #getPieceByLetter(moveStr) {
-
-        const piece = moveStr.charAt(0);
-
-        switch (piece) {
-
-            case 'R':
-                return this.ROOK;
-            case 'N':
-                return this.KNIGHT;
-            case 'B':
-                return this.BISHOP;
-            case 'K':
-            case 'O':
-                return this.KING;
-            case 'Q':
-                return this.QUEEN;
-            default:
-                return this.PAWN;
-        }
-    }
-
-    #getTargetSquare(pgnMove) {
-
-        let col, row, colLetter;
-
-
-
-        let move = pgnMove.moveStr;
-        const cols = "abcdefgh";
-        move = move.replace("+", "");
-        move = move.replace("#", "");
-
-        const piece = this.#getPieceByLetter(pgnMove.moveStr);
-        if (piece == this.PAWN) {
-            if (pgnMove.moveStr.indexOf('x') > 0) { // e.g cxd4
-                colLetter = pgnMove.moveStr.charAt(2);
-                col = cols.indexOf(colLetter);
-                row = this.BOARD_ROWS - parseInt(move.charAt(3));
-            }
-            else {
-                colLetter = move.charAt(0);
-                col = cols.indexOf(colLetter);
-                row = this.BOARD_ROWS - parseInt(move.charAt(1));
-            }
-        }
-        else {
-            if (pgnMove.moveStr.indexOf('x') > 0) {
-                colLetter = move.charAt(2);
-                col = cols.indexOf(colLetter);
-                row = this.BOARD_ROWS - parseInt(move.charAt(3));
-            }
-            else {
-                if (move.length == 4) {
-                    colLetter = move.charAt(2);
-                    col = cols.indexOf(colLetter);
-                    row = this.BOARD_ROWS - parseInt(move.charAt(3));
-                }
-                else {
-                    colLetter = move.charAt(1);
-                    col = cols.indexOf(colLetter);
-                    row = this.BOARD_ROWS - parseInt(move.charAt(2));
-                }
-            }
-
-        }
-
-        return this.square(row, col);
     }
 
     #findSource(pgnMove, turn) {
@@ -2092,9 +2182,9 @@ class ChessGame {
         const options = [];
         //let sourceCol, sourceRow;
 
-        if (pgnMove.source)
-            if (pgnMove.source.row && pgnMove.source.col)
-                return pgnMove.source;
+        if (pgnMove.source) {
+            if (pgnMove.source.row && pgnMove.source.col) { return pgnMove.source; }
+        }
 
 
         let move = pgnMove.moveStr;
@@ -2108,11 +2198,10 @@ class ChessGame {
         // }
 
 
-
         switch (piece) {
             case this.PAWN:
 
-                if (pgnMove.moveStr.indexOf('x') > 0) {
+                if (pgnMove.moveStr.indexOf("x") > 0) {
                     colLetter = pgnMove.moveStr.charAt(0);
                     col = cols.indexOf(colLetter);
                     row = target.row + forward;
@@ -2120,77 +2209,67 @@ class ChessGame {
                 }
 
                 //hit left
-                if (pgnMove.moveStr.indexOf('x') > 0 && (this.#state.board[target.row + forward][target.col + 1].pieceType == this.PAWN) && this.validateMove(this.square(target.row + forward, target.col + 1), target, this.Turn).valid)
-                    options.push(this.square(target.row + forward, target.col + 1));
+                if (pgnMove.moveStr.indexOf("x") > 0 && (this.#state.board[target.row + forward][target.col + 1].pieceType == this.PAWN) && this.validateMove(this.square(target.row + forward, target.col + 1), target, this.Turn).valid) { options.push(this.square(target.row + forward, target.col + 1)); }
 
                 //hit right
-                if (pgnMove.moveStr.indexOf('x') > 0 && (this.#state.board[target.row + forward][target.col - 1].pieceType == this.PAWN) && this.validateMove(this.square(target.row + forward, target.col - 1), target, this.Turn).valid)
-                    options.push(this.square(target.row + forward, target.col - 1));
+                if (pgnMove.moveStr.indexOf("x") > 0 && (this.#state.board[target.row + forward][target.col - 1].pieceType == this.PAWN) && this.validateMove(this.square(target.row + forward, target.col - 1), target, this.Turn).valid) { options.push(this.square(target.row + forward, target.col - 1)); }
 
                 // default move
-                if (this.#state.board[target.row + forward][target.col] && this.#state.board[target.row + forward][target.col].pieceType == this.PAWN && this.validateMove(this.square(target.row + forward, target.col), target, this.Turn).valid)
-                    options.push(this.square(target.row + forward, target.col));
+                if (this.#state.board[target.row + forward][target.col] && this.#state.board[target.row + forward][target.col].pieceType == this.PAWN && this.validateMove(this.square(target.row + forward, target.col), target, this.Turn).valid) { options.push(this.square(target.row + forward, target.col)); }
 
                 // first double move
-                if (this.#state.board[target.row + (forward * 2)][target.col] && this.#state.board[target.row + (forward * 2)][target.col].pieceType == this.PAWN && this.validateMove(this.square(target.row + (forward * 2), target.col), target, this.Turn).valid)
-                    options.push(this.square(target.row + (forward * 2), target.col));
+                if (this.#state.board[target.row + (forward * 2)][target.col] && this.#state.board[target.row + (forward * 2)][target.col].pieceType == this.PAWN && this.validateMove(this.square(target.row + (forward * 2), target.col), target, this.Turn).valid) { options.push(this.square(target.row + (forward * 2), target.col)); }
 
-                if (options.length == 1)
-                    return options[0];
+                if (options.length == 1) { return options[0]; }
                 else {
                     const chosenOption = options.filter(o => pgnMove.source && (o.row == pgnMove.source.row || o.col == pgnMove.source.col))[0];
-                    if (chosenOption)
-                        return chosenOption;
-                    else
-                        return options[0];
+                    if (chosenOption) { return chosenOption; }
+                    else { return options[0]; }
                 }
 
 
             case this.ROOK:
 
                 for (let i = 1; target.row + i < this.BOARD_ROWS; i++) {
-                    if (this.#state.board[target.row + i][target.col] == null) continue;
+                    if (this.#state.board[target.row + i][target.col] == null) { continue; }
                     if (this.#state.board[target.row + i][target.col].color == turn &&
                         this.#state.board[target.row + i][target.col].pieceType == this.ROOK &&
                         this.validateMove(this.square(target.row + i, target.col), target, this.Turn).valid) {
                         options.push(this.square(target.row + i, target.col));
                         //return Square(target.row + i, target.col)
-                    } else break;
+                    } else { break; }
                 }
                 for (let i = 1; target.col + i < this.BOARD_ROWS; i++) {
-                    if (this.#state.board[target.row][target.col + i] == null) continue;
+                    if (this.#state.board[target.row][target.col + i] == null) { continue; }
                     if (this.#state.board[target.row][target.col + i].color == turn &&
                         this.#state.board[target.row][target.col + i].pieceType == this.ROOK &&
                         this.validateMove(this.square(target.row, target.col + i), target, this.Turn).valid) {
                         options.push(this.square(target.row, target.col + i));
-                    } else break;
+                    } else { break; }
                 }
                 for (let i = 1; target.col - i >= 0; i++) {
-                    if (this.#state.board[target.row][target.col - i] == null) continue;
+                    if (this.#state.board[target.row][target.col - i] == null) { continue; }
                     if (this.#state.board[target.row][target.col - i].color == turn &&
                         this.#state.board[target.row][target.col - i].pieceType == this.ROOK &&
                         this.validateMove(this.square(target.row, target.col - i), target, this.Turn).valid) {
                         options.push(this.square(target.row, target.col - i));
-                    } else break;
+                    } else { break; }
                 }
 
                 for (let i = 1; target.row - i >= 0; i++) {
-                    if (this.#state.board[target.row - i][target.col] == null) continue;
+                    if (this.#state.board[target.row - i][target.col] == null) { continue; }
                     if (this.#state.board[target.row - i][target.col].color == turn &&
                         this.#state.board[target.row - i][target.col].pieceType == this.ROOK &&
                         this.validateMove(this.square(target.row - i, target.col), target, this.Turn).valid) {
                         options.push(this.square(target.row - i, target.col));
-                    } else break;
+                    } else { break; }
                 }
 
-                if (options.length == 1)
-                    return options[0];
+                if (options.length == 1) { return options[0]; }
                 else {
                     const chosenOption = options.filter(o => pgnMove.source && (o.row == pgnMove.source.row || o.col == pgnMove.source.col))[0];
-                    if (chosenOption)
-                        return chosenOption;
-                    else
-                        return options[0];
+                    if (chosenOption) { return chosenOption; }
+                    else { return options[0]; }
                 }
 
 
@@ -2199,89 +2278,75 @@ class ChessGame {
                     this.#state.board[target.row + 1][target.col + 2] &&
                     this.#state.board[target.row + 1][target.col + 2].color == turn &&
                     this.#state.board[target.row + 1][target.col + 2].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row + 1, target.col + 2), target, this.Turn).valid)
-                    options.push(this.square(target.row + 1, target.col + 2));
+                    this.validateMove(this.square(target.row + 1, target.col + 2), target, this.Turn).valid) { options.push(this.square(target.row + 1, target.col + 2)); }
 
                 if (target.row + 2 < this.BOARD_ROWS && target.col + 1 < this.BOARD_COLUMNS &&
                     this.#state.board[target.row + 2][target.col + 1] &&
                     this.#state.board[target.row + 2][target.col + 1].color == turn &&
                     this.#state.board[target.row + 2][target.col + 1].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row + 2, target.col + 1), target, this.Turn).valid)
-                    options.push(this.square(target.row + 2, target.col + 1));
+                    this.validateMove(this.square(target.row + 2, target.col + 1), target, this.Turn).valid) { options.push(this.square(target.row + 2, target.col + 1)); }
 
                 if (target.row + 1 < this.BOARD_ROWS && target.col - 2 >= 0 &&
                     this.#state.board[target.row + 1][target.col - 2] &&
                     this.#state.board[target.row + 1][target.col - 2].color == turn &&
                     this.#state.board[target.row + 1][target.col - 2].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row + 1, target.col - 2), target, this.Turn).valid)
-                    options.push(this.square(target.row + 1, target.col - 2));
+                    this.validateMove(this.square(target.row + 1, target.col - 2), target, this.Turn).valid) { options.push(this.square(target.row + 1, target.col - 2)); }
 
                 if (target.row + 2 < this.BOARD_ROWS && target.col - 1 >= 0 &&
                     this.#state.board[target.row + 2][target.col - 1] &&
                     this.#state.board[target.row + 2][target.col - 1].color == turn &&
                     this.#state.board[target.row + 2][target.col - 1].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row + 2, target.col - 1), target, this.Turn).valid)
-                    options.push(this.square(target.row + 2, target.col - 1));
+                    this.validateMove(this.square(target.row + 2, target.col - 1), target, this.Turn).valid) { options.push(this.square(target.row + 2, target.col - 1)); }
 
                 if (target.row - 1 >= 0 && target.col - 2 >= 0 &&
                     this.#state.board[target.row - 1][target.col - 2] &&
                     this.#state.board[target.row - 1][target.col - 2].color == turn &&
                     this.#state.board[target.row - 1][target.col - 2].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row - 1, target.col - 2), target, this.Turn).valid)
-                    options.push(this.square(target.row - 1, target.col - 2));
+                    this.validateMove(this.square(target.row - 1, target.col - 2), target, this.Turn).valid) { options.push(this.square(target.row - 1, target.col - 2)); }
 
                 if (target.row - 2 >= 0 && target.col + 1 < this.BOARD_COLUMNS &&
                     this.#state.board[target.row - 2][target.col + 1] &&
                     this.#state.board[target.row - 2][target.col + 1].color == turn &&
                     this.#state.board[target.row - 2][target.col + 1].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row - 2, target.col + 1), target, this.Turn).valid)
-                    options.push(this.square(target.row - 2, target.col + 1));
+                    this.validateMove(this.square(target.row - 2, target.col + 1), target, this.Turn).valid) { options.push(this.square(target.row - 2, target.col + 1)); }
 
                 if (target.row - 1 >= 0 && target.col + 2 >= 0 &&
                     this.#state.board[target.row - 1][target.col + 2] &&
                     this.#state.board[target.row - 1][target.col + 2].color == turn &&
                     this.#state.board[target.row - 1][target.col + 2].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row - 1, target.col + 2), target, this.Turn).valid)
-                    options.push(this.square(target.row - 1, target.col + 2));
+                    this.validateMove(this.square(target.row - 1, target.col + 2), target, this.Turn).valid) { options.push(this.square(target.row - 1, target.col + 2)); }
 
                 if (target.row - 2 >= 0 && target.col - 1 >= 0 &&
                     this.#state.board[target.row - 2][target.col - 1] &&
                     this.#state.board[target.row - 2][target.col - 1].color == turn &&
                     this.#state.board[target.row - 2][target.col - 1].pieceType == this.KNIGHT &&
-                    this.validateMove(this.square(target.row - 2, target.col - 1), target, this.Turn).valid)
-                    options.push(this.square(target.row - 2, target.col - 1));
+                    this.validateMove(this.square(target.row - 2, target.col - 1), target, this.Turn).valid) { options.push(this.square(target.row - 2, target.col - 1)); }
 
-                if (options.length == 1)
-                    return options[0];
+                if (options.length == 1) { return options[0]; }
                 else {
                     const chosenOption = options.filter(o => pgnMove.source && (o.row == pgnMove.source.row || o.col == pgnMove.source.col))[0];
-                    if (chosenOption)
-                        return chosenOption;
-                    else
-                        return options[0];
+                    if (chosenOption) { return chosenOption; }
+                    else { return options[0]; }
                 }
 
             case this.BISHOP:
 
                 for (let i = 1; target.row + i < this.BOARD_ROWS && target.col + i < this.BOARD_COLUMNS; i++) {
 
-                    if (this.#state.board[target.row + i][target.col + i] == null)
-                        continue;
+                    if (this.#state.board[target.row + i][target.col + i] == null) { continue; }
 
                     if ((this.#state.board[target.row + i][target.col + i].color == turn) &&
                         (this.#state.board[target.row + i][target.col + i].pieceType == this.BISHOP) &&
-                        (this.validateMove(this.square(target.row + i, target.col + i), target, this.Turn).valid))
-                        return this.square(target.row + i, target.col + i);
+                        (this.validateMove(this.square(target.row + i, target.col + i), target, this.Turn).valid)) { return this.square(target.row + i, target.col + i); }
 
 
-                    else break;
+                    else { break; }
 
                 }
 
 
                 for (let i = 1; target.row - i >= 0 && target.col - i >= 0; i++) {
-                    if (this.#state.board[target.row - i][target.col - i] == null)
-                        continue;
+                    if (this.#state.board[target.row - i][target.col - i] == null) { continue; }
 
                     if ((this.#state.board[target.row - i][target.col - i].color == turn) &&
                         (this.#state.board[target.row - i][target.col - i].pieceType == this.BISHOP) &&
@@ -2289,35 +2354,31 @@ class ChessGame {
                         return this.square(target.row - i, target.col - i);
 
 
-                    } else break;
+                    } else { break; }
 
                 }
 
                 for (let i = 1; target.row - i >= 0 && target.col + i < this.BOARD_COLUMNS; i++) {
 
-                    if (this.#state.board[target.row - i][target.col + i] == null)
-                        continue;
+                    if (this.#state.board[target.row - i][target.col + i] == null) { continue; }
 
                     if ((this.#state.board[target.row - i][target.col + i].color == turn) &&
                         (this.#state.board[target.row - i][target.col + i].pieceType == this.BISHOP) &&
-                        (this.validateMove(this.square(target.row - i, target.col + i), target, this.Turn).valid))
-                        return this.square(target.row - i, target.col + i);
+                        (this.validateMove(this.square(target.row - i, target.col + i), target, this.Turn).valid)) { return this.square(target.row - i, target.col + i); }
 
-                    else break;
+                    else { break; }
 
                 }
 
                 for (let i = 1; target.row + i < this.BOARD_ROWS && target.col - i >= 0; i++) {
 
-                    if (this.#state.board[target.row + i][target.col - i] == null)
-                        continue;
+                    if (this.#state.board[target.row + i][target.col - i] == null) { continue; }
 
                     if ((this.#state.board[target.row + i][target.col - i].color == turn) &&
                         (this.#state.board[target.row + i][target.col - i].pieceType == this.BISHOP) &&
-                        (this.validateMove(this.square(target.row + i, target.col - i), target, this.Turn).valid))
-                        return this.square(target.row + i, target.col - i);
+                        (this.validateMove(this.square(target.row + i, target.col - i), target, this.Turn).valid)) { return this.square(target.row + i, target.col - i); }
 
-                    else break;
+                    else { break; }
                 }
 
                 break;
@@ -2328,67 +2389,57 @@ class ChessGame {
                 if (target.row + 1 < this.BOARD_ROWS && target.col - 1 >= 0) {
                     const square = this.square(target.row + 1, target.col - 1);
                     const piece = this.#state.board[target.row + 1][target.col - 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
                 if (target.row + 1 < this.BOARD_ROWS) {
                     const square = this.square(target.row + 1, target.col);
                     const piece = this.#state.board[target.row + 1][target.col];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
                 if (target.row + 1 < this.BOARD_ROWS && target.col + 1 < this.BOARD_COLUMNS) {
                     const square = this.square(target.row + 1, target.col + 1);
                     const piece = this.#state.board[target.row + 1][target.col + 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
                 if (target.col - 1 >= 0) {
                     const square = this.square(target.row, target.col - 1);
                     const piece = this.#state.board[target.row][target.col - 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 if (target.col + 1 < this.BOARD_COLUMNS) {
                     const square = this.square(target.row, target.col + 1);
                     const piece = this.#state.board[target.row][target.col + 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 if (target.row - 1 >= 0 && target.col - 1 >= 0) {
                     const square = this.square(target.row - 1, target.col - 1);
                     const piece = this.#state.board[target.row - 1][target.col - 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 if (target.row - 1 >= 0) {
                     const square = this.square(target.row - 1, target.col);
                     const piece = this.#state.board[target.row - 1][target.col];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 if (target.row - 1 >= 0 && target.col + 1 < this.BOARD_COLUMNS) {
                     const square = this.square(target.row - 1, target.col + 1);
                     const piece = this.#state.board[target.row - 1][target.col + 1];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 if (target.col + 2 < this.BOARD_COLUMNS) {
                     const square = this.square(target.row, target.col + 2);
                     const piece = this.#state.board[target.row][target.col + 2];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
                 if (target.col - 2 >= 0) {
                     const square = this.square(target.row, target.col - 2);
                     const piece = this.#state.board[target.row][target.col - 2];
-                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid)
-                        return square;
+                    if (piece && piece.color == turn && piece.pieceType == this.KING && this.validateMove(square, target, this.Turn).valid) { return square; }
                 }
 
                 break;
@@ -2400,15 +2451,12 @@ class ChessGame {
 
                     const piece = this.#state.board[target.row + i][target.col + i];
                     const square = this.square(target.row + i, target.col + i);
-                    if (piece == null)
-                        continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
-                    else
-                        break;
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
+                    else { break; }
 
                 }
 
@@ -2416,32 +2464,25 @@ class ChessGame {
 
                     const piece = this.#state.board[target.row - i][target.col - i];
                     const square = this.square(target.row - i, target.col - i);
-                    if (piece == null)
-                        continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
-                    else
-                        break;
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
+                    else { break; }
                 }
-
 
 
                 for (let i = 1; target.row - i >= 0 && target.col + i < this.BOARD_COLUMNS; i++) {
 
                     const square = this.square(target.row - i, target.col + i);
                     const piece = this.#state.board[target.row - i][target.col + i];
-                    if (piece == null)
-                        continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
-                    else
-                        break;
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
+                    else { break; }
 
                 }
 
@@ -2450,16 +2491,13 @@ class ChessGame {
 
                     const square = this.square(target.row + i, target.col - i);
                     const piece = this.#state.board[target.row + i][target.col - i];
-                    if (piece == null)
-                        continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
 
-                    else
-                        break;
+                    else { break; }
 
                 }
 
@@ -2470,58 +2508,51 @@ class ChessGame {
                 for (let i = 1; target.row + i < this.BOARD_ROWS; i++) {
                     const square = this.square(target.row + i, target.col);
                     const piece = this.#state.board[target.row + i][target.col];
-                    if (piece == null) continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
-                    else
-                        break;
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
+                    else { break; }
                 }
 
                 for (let i = 1; target.col + i < this.BOARD_ROWS; i++) {
                     const square = this.square(target.row, target.col + i);
                     const piece = this.#state.board[target.row][target.col + i];
-                    if (piece == null) continue;
+                    if (piece == null) { continue; }
 
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
-                        this.validateMove(square, target, this.Turn).valid)
-                        options.push(square);
-                    else
-                        break;
+                        this.validateMove(square, target, this.Turn).valid) { options.push(square); }
+                    else { break; }
                 }
                 for (let i = 1; target.col - i >= 0; i++) {
                     const square = this.square(target.row, target.col - i);
                     const piece = this.#state.board[target.row][target.col - i];
-                    if (piece == null) continue;
+                    if (piece == null) { continue; }
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
                         this.validateMove(square, target, this.Turn).valid) {
                         options.push(square);
-                    } else break;
+                    } else { break; }
                 }
 
                 for (let i = 1; target.row - i >= 0; i++) {
                     const square = this.square(target.row - i, target.col);
                     const piece = this.#state.board[target.row - i][target.col];
-                    if (piece == null) continue;
+                    if (piece == null) { continue; }
                     if (piece.color == turn &&
                         piece.pieceType == this.QUEEN &&
                         this.validateMove(square, target, this.Turn).valid) {
                         options.push(square);
-                    } else break;
+                    } else { break; }
                 }
 
-                if (options.length == 1)
-                    return options[0];
+                if (options.length == 1) { return options[0]; }
                 else {
                     const chosenOption = options.filter(o => pgnMove.source && (o.row == pgnMove.source.row || o.col == pgnMove.source.col))[0];
-                    if (chosenOption)
-                        return chosenOption;
-                    else
-                        return options[0];
+                    if (chosenOption) { return chosenOption; }
+                    else { return options[0]; }
                 }
 
             default:
@@ -2532,240 +2563,6 @@ class ChessGame {
 
     }
 
-    parsePGNMove(move, color) {
-
-        const moveRegex = /([RNBKQ])?([a-h])?([1-8])?([x])?([a-h][1-8])?([=][RNBQ])?([+#])?/gm;
-        const cols = "abcdefgh";
-        const array = [...move.matchAll(moveRegex)][0];
-        let col, row;
-        const result = {
-            moveStr: array[0],
-            piece: this.PAWN,
-        };
-
-        if (move.indexOf("O-O-O") != -1) {
-            if (color == "white") { col = 2; row = 7; }
-            else { col = 2; row = 0; }
-            result.castling = true;
-            result.queenSide = true;
-            result.piece = this.letterToPiece("K");
-            result.target = this.square(row, col);
-            result.moveStr = move;
-            result.check = move.indexOf("+") != -1;
-            result.checkmate = move.indexOf("#") != -1;
-            return result;
-        }
-        else if (move.indexOf("O-O") != -1) {
-            if (color == "white") { col = 6; row = 7; }
-            else { col = 6; row = 0; }
-            result.castling = true;
-            result.kingSide = true;
-            result.piece = this.letterToPiece("K");
-            result.target = this.square(row, col);
-            result.moveStr = move;
-            result.check = move.indexOf("+") != -1;
-            result.checkmate = move.indexOf("#") != -1;
-            return result;
-
-        }
-
-        else {
-
-            if (array[1]) { result.piece = this.letterToPiece(array[1]); }
-            if (array[2]) { col = cols.indexOf(array[2]); }
-            if (array[3]) { row = this.BOARD_ROWS - parseInt(array[3]); }
-            if (col !== undefined || row !== undefined) {
-                result.source = { row: row, col: col };
-            }
-
-            if (array[4]) { result.captrue = true; }
-            if (array[5]) { result.target = { col: cols.indexOf(array[5].charAt(0)), row: this.BOARD_ROWS - parseInt(array[5].charAt(1)) }; }
-            else { result.target = result.source; result.source = null; }
-            if (array[6]) { result.promotedTo = array[6].charAt(1); }
-            if (array[7]) {
-                if (array[7] == '+') result.check = true;
-                if (array[7] == '#') result.checkmate = true;
-            }
-            return result;
-        }
-    }
-
-    isResultMove(move) {
-        if (move.moveStr == "1/2-1/2" || move.moveStr == "0-1" || move.moveStr == "1-0" || move.moveStr == "*")
-            return true;
-        return false;
-    }
-
-    convertPGNMove(pgnMove) {
-
-        const move = this.parsePGNMove(pgnMove.moveStr, pgnMove.color);
-        const source = this.#findSource(move, pgnMove.color);
-        move.source = source;
-        move.whitePlayerView = true;
-        move.valid = true;
-
-        return move;
-    }
-
-    isAmbiguousMove(move) {
-        let ambiguousInfo = null;
-        this.#analysis = true;
-        this.undo();
-        const options = this.possibleMovesToTarget(move.target);
-        const moreSpecificOptions = options.filter(option =>
-            option.piece.pieceType == move.piece.pieceType && option.piece.color == move.piece.color);
-
-        if (moreSpecificOptions.length > 1 && !moreSpecificOptions[0].promotion) {
-            ambiguousInfo = {};
-            ambiguousInfo.sameCol = moreSpecificOptions[0].source.col == moreSpecificOptions[1].source.col;
-        }
-
-        this.redo();
-        this.#analysis = false;
-
-        return ambiguousInfo;
-    }
-
-    getPGNMoveNotation(move) {
-
-        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        const moveString = [];
-
-        if (move.castling) {
-            return move.kingsideCastling ? "O-O" : "O-O-O";
-        }
-
-        const PIECE = 0, SOURCE_ROW = 2, SOURCE_COL = 1, CAPTURE = 3, TARGET_COL = 4, TARGET_ROW = 5, PROMOTION = 6, PROMOTION_PIECE = 7, ALERT = 8;
-
-
-        moveString[PIECE] = this.pieceToLetter(move.piece.pieceType);
-        const ambiguousInfo = this.isAmbiguousMove(move);
-        if (ambiguousInfo) {
-            if (ambiguousInfo.sameCol) {
-                moveString[SOURCE_ROW] = this.#state.whitePlayerView ?
-                    this.BOARD_ROWS - move.source.row :
-                    move.source.row + 1;
-            }
-            else {
-                moveString[SOURCE_COL] = this.#state.whitePlayerView ?
-                    letters[move.source.col] :
-                    letters[this.BOARD_COLUMNS - move.source.col - 1];
-            }
-        }
-
-        if (move.hitSquare) {
-            moveString[CAPTURE] = "x";
-            if (move.piece.pieceType == this.PAWN)
-                moveString[SOURCE_COL] = this.#state.whitePlayerView ?
-                    letters[move.source.col] :
-                    letters[this.BOARD_COLUMNS - move.source.col - 1];
-        }
-
-
-        moveString[TARGET_COL] = this.#state.whitePlayerView ?
-            letters[move.target.col] :
-            letters[this.BOARD_COLUMNS - move.target.col - 1];
-
-        moveString[TARGET_ROW] = this.#state.whitePlayerView ?
-            this.BOARD_ROWS - move.target.row :
-            move.target.row + 1;
-
-        if (move.promotion) {
-            moveString[PROMOTION] = "=";
-            moveString[PROMOTION_PIECE] = this.pieceToLetter(move.selectedPiece);
-        }
-
-        if (move.check) {
-            moveString[ALERT] = "+";
-        }
-
-        if (move.checkmate) {
-            moveString[ALERT] = "#";
-        }
-
-        const result = moveString.join("");
-        return result;
-    }
-
-    letterToPiece(letter) {
-        switch (letter) {
-
-            case 'R':
-                return this.ROOK;
-            case 'N':
-                return this.KNIGHT;
-            case 'B':
-                return this.BISHOP;
-            case 'K':
-                return this.KING;
-            case 'Q':
-                return this.QUEEN;
-            default:
-                return this.PAWN;
-        }
-    }
-
-    opponent(color) {
-        if (color == "white")
-            return "black";
-        return "white";
-    }
-
-    colorName(color) {
-        if (color == "white")
-            return "White";
-        else if (color == "black")
-            return "Black";
-        else
-            return "ERROR";
-
-
-    }
-
-    pieceName(piece) {
-
-        switch (piece) {
-            case this.PAWN:
-                return "Pawn";
-            case this.ROOK:
-                return "Rook";
-            case this.KNIGHT:
-                return "Knight";
-            case this.BISHOP:
-                return "Bishop";
-            case this.KING:
-                return "King";
-            case this.QUEEN:
-                return "Queen";
-            default:
-                return "Error";
-        }
-    }
-
-
-
-    pieceToLetter(piece) {
-        switch (piece) {
-
-            case this.ROOK:
-                return 'R';
-            case this.KNIGHT:
-                return 'N';
-            case this.BISHOP:
-                return 'B';
-            case this.KING:
-                return 'K';
-            case this.QUEEN:
-                return 'Q';
-            default:
-                return '';
-        }
-    }
-
-    square = (i, j) => {
-        return { row: i, col: j };
-    };
-
 
     Reasons = {
         INVALID_SOURCE_TARGET: "Invalid source or target inputs",
@@ -2773,10 +2570,9 @@ class ChessGame {
         NO_SOURCE_PIECE: "There is no piece in the source Square",
         GAME_OVER: "Game Over",
         PROMOTION_IN_PROGRESS: "Promotion in Progress, waiting for user selection",
-        NOT_YOUR_TURN: `This is not your turn`,
+        NOT_YOUR_TURN: "This is not your turn",
         PIECE_MOVE_ILLEGAL: "Illegal piece move",
     };
-
 
     PAWN = 0;
     KING = 1;
@@ -2784,21 +2580,13 @@ class ChessGame {
     BISHOP = 3;
     ROOK = 4;
     QUEEN = 5;
-
     BOARD_ROWS = 8;
     BOARD_COLUMNS = 8;
-
-
-
 }
 
 
-
-
-
-
 function isServerSide() {
-    return !(typeof window != 'undefined' && window.document);
+    return !(typeof window != "undefined" && window.document);
 }
 
 

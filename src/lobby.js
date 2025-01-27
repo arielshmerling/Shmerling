@@ -1,8 +1,6 @@
 /*global startGame */
 
 
-
-
 /* eslint-disable-next-line no-unused-vars */
 function menuPositionSetup() {
     console.log("not implemented");

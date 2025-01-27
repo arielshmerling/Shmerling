@@ -2,7 +2,7 @@
 
 const { GameBase } = require("./GameBase");
 const { Player } = require("./Player");
-const { Brain } = require('./../../brain');
+const { Brain } = require("./../../brain");
 const { SinglePlayerMessageProcessor } = require("./SinglePlayerMessageProcessor");
 
 class SinglePlayerGame extends GameBase {
@@ -38,7 +38,8 @@ class SinglePlayerGame extends GameBase {
 
         try {
             const brainMove = await brain.nextMove(chessGame);
-            console.log("Brain suggested a move: " + chessGame.MoveStr(brainMove));
+            //console.log("Brain suggested a move: " + chessGame.MoveStr(brainMove));
+            console.log("Brain suggested a move: " + chessGame.getPGNMoveNotation(brainMove));
             const move = await this.handleMove(brainPlaysAsWhite, brainMove, "brain");
             if (move.valid) {
                 this.sendMoveToOpponenet(brainPlaysAsWhite, brainMove);

@@ -26,7 +26,7 @@ exports.review = async (req, res) => {
         gamesManagerService.AddGame(game);
     }
 
-    res.render('game', { username: req.session.user_name });
+    res.render("game", { username: req.session.user_name });
 };
 
 exports.getGameInfo = async (req, res) => {
@@ -100,7 +100,7 @@ function calculateTimer(game, isWhite) {
 
 async function rejoinGame(game, userName, userId) {
     // 1. notify opponent
-    const message = { type: "info", info: 'opponent rejoined', gameId: game.gameId };
+    const message = { type: "info", info: "opponent rejoined", gameId: game.gameId };
     const isWhite = (game.whitePlayer.userId == userId);
     game.sendMessageToOpponent(message, isWhite);
 
@@ -140,7 +140,7 @@ exports.startGame = async (req, res) => {
     // Game is in progress - for example, user refresh the game page
     game = gamesManagerService.findGameByStatus(gameTypeInt, userId, "in progress");
     if (game) {
-        res.render('game', { username });
+        res.render("game", { username });
         return;
     }
 
@@ -151,7 +151,7 @@ exports.startGame = async (req, res) => {
         game.status = "reJoining";
         req.session.gameId = game.gameId;
         registerEvents(game);
-        res.render('game', { username });
+        res.render("game", { username });
         return;
     }
 
@@ -160,7 +160,7 @@ exports.startGame = async (req, res) => {
     if (game) {
         req.session.gameId = game.gameId;
         registerEvents(game);
-        res.render('game', { username });
+        res.render("game", { username });
         return;
     }
 
@@ -177,7 +177,7 @@ exports.startGame = async (req, res) => {
         game.joinGame(blackPlayer);
         req.session.gameId = game.gameId;
         registerEvents(game);
-        res.render('game', { username });
+        res.render("game", { username });
         return;
     }
 
@@ -188,7 +188,7 @@ exports.startGame = async (req, res) => {
     game.gameId = gameDoc.id;
     req.session.gameId = game.gameId;
     registerEvents(game);
-    res.render('game', { username });
+    res.render("game", { username });
 };
 
 function registerEvents(game) {

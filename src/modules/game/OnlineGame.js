@@ -25,7 +25,7 @@ class OnlineGame extends GameBase {
             if (this.OnGameStateChanged) {
                 this.raiseEvent(this.OnGameStateChanged, { game: this, newState: this.status });
             }
-            const message = { type: "info", info: 'opponent joined', gameId: this.gameId, data: this.blackPlayer.userName };
+            const message = { type: "info", info: "opponent joined", gameId: this.gameId, data: this.blackPlayer.userName };
             this.sendMessageToOpponent(message, isWhitePlayer);
         }
 
@@ -60,7 +60,7 @@ class OnlineGame extends GameBase {
         };
 
         if (opponentWs)
-            opponentWs.send(JSON.stringify(message));
+            {opponentWs.send(JSON.stringify(message));}
 
     }
 
@@ -80,7 +80,7 @@ class OnlineGame extends GameBase {
         }
 
         if (opponentWs)
-            opponentWs.send(JSON.stringify(message));
+            {opponentWs.send(JSON.stringify(message));}
 
     }
 
@@ -116,7 +116,7 @@ class OnlineGame extends GameBase {
                 if (player.channel.readyState != player.channel.OPEN) {
                     this.status = this.lastStatus;
                     this.raiseEvent(this.OnGameStateChanged, { game: this, newState: this.status });
-                    const message = { type: "info", info: 'opponent rejoined', gameId: this.gameId };
+                    const message = { type: "info", info: "opponent rejoined", gameId: this.gameId };
                     const isWhite = (this.whitePlayer.userId == player.userId);
                     this.sendMessageToOpponent(message, isWhite);
                 }
@@ -128,7 +128,6 @@ class OnlineGame extends GameBase {
 
 
 }
-
 
 
 module.exports = { OnlineGame };

@@ -1,8 +1,7 @@
 
 
-
 const mongoose = require("mongoose");
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require("mongodb").ObjectId;
 
 const stateSchema = new mongoose.Schema({
     state: {
@@ -12,9 +11,6 @@ const stateSchema = new mongoose.Schema({
         type: String,
     },
 });
-
-
-
 
 
 const gameSchema = new mongoose.Schema({
@@ -52,6 +48,6 @@ const gameSchema = new mongoose.Schema({
 
 
 module.exports = {
-    Game: mongoose.model('Game', gameSchema),
-    State: mongoose.model('State', stateSchema),
+    Game: mongoose.model("Game", gameSchema),
+    State: mongoose.model("State", stateSchema),
 };

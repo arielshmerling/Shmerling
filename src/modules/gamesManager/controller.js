@@ -13,7 +13,7 @@ exports.showList = async (req, res) => {
     let pgnGames = await gamesManagerService.getPGNGames();
     pgnGames = pgnGames.slice(0, 20);
     const pgn = pgnGames.map(({ moves, ...rest }) => rest);
-    res.render('list', { playerGames, pgn });
+    res.render("list", { playerGames, pgn });
 };
 
 

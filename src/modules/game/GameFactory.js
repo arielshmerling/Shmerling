@@ -10,16 +10,16 @@ class GameFactory {
 
         switch (gameInfo.gameType) {
             case 1:
-            case 'SinglePlayerGame':
+            case "SinglePlayerGame":
                 return new SinglePlayerGame(gameInfo, player, mode);
             case 2:
-            case 'OnlineGame':
+            case "OnlineGame":
                 return new OnlineGame(gameInfo, player, mode);
             case 3:
-            case 'PracticeGame':
+            case "PracticeGame":
                 return new PracticeGame(gameInfo, player, mode);
             default:
-                throw new Error('Unknown game type');
+                throw new Error("Unknown game type");
         }
     }
 }

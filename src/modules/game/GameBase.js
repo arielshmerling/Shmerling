@@ -69,14 +69,12 @@ class GameBase {
 
         const resultMove = this.chessGame.ResultMove;
         if (this.moves.length > 0)
-            resultMove.moveTime = this.moves[this.moves.length - 1].moveTime;
+            {resultMove.moveTime = this.moves[this.moves.length - 1].moveTime;}
         else
-            resultMove.moveTime = this.chessGame.GameTimeLength;
+            {resultMove.moveTime = this.chessGame.GameTimeLength;}
         this.moves.push(resultMove);
         await this.raiseEvent(this.OnMove, { game: this, move: resultMove });
     }
-
-
 
 
     async handleMove(isWhite, moveObj, origin) {
@@ -147,7 +145,7 @@ class GameBase {
         };
 
         if (channel)
-            channel.send(JSON.stringify(message));
+            {channel.send(JSON.stringify(message));}
 
     };
 
@@ -170,8 +168,8 @@ class GameBase {
         const playerChannel = this.getChannel(isWhite);
 
         if (playerChannel)
-            if (playerChannel.readyState == playerChannel.OPEN)
-                playerChannel.send(JSON.stringify(message));
+            {if (playerChannel.readyState == playerChannel.OPEN)
+                {playerChannel.send(JSON.stringify(message));}}
 
     }
     createRemtach(isWhite, callback) {
@@ -187,8 +185,6 @@ class GameBase {
 
 
     async draw(offeredBy, callback) {
-
-
 
 
         this.status = "game over";
@@ -226,16 +222,16 @@ class GameBase {
 
     closeGame = () => {
         if (this.whitePlayer)
-            if (this.whitePlayer.channel)
-                this.whitePlayer.channel.off("message", this.onMessageReceived);
+            {if (this.whitePlayer.channel)
+                {this.whitePlayer.channel.off("message", this.onMessageReceived);}}
         if (this.blackPlayer)
-            if (this.blackPlayer.channel)
-                this.blackPlayer.channel.off("message", this.onMessageReceived);
+            {if (this.blackPlayer.channel)
+                {this.blackPlayer.channel.off("message", this.onMessageReceived);}}
     };
 
     async raiseEvent(event, param) {
         if (event != null)
-            await event(param);
+            {await event(param);}
     }
 
 

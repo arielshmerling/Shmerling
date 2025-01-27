@@ -1,10 +1,10 @@
 //const Game = require('./models/game');
-const Game = require('../modules/game/model');
+const Game = require("../modules/game/model");
 require("dotenv").config();  // Load environment variables
 
 class Database {
 
-  static #mongoose = require('mongoose');
+  static #mongoose = require("mongoose");
 
 
   constructor() {

@@ -1,6 +1,6 @@
 // Version 1.7
-const { ChessGame } = require('./ChessGame');
-const { State } = require('./modules/game/model');
+const { ChessGame } = require("./ChessGame");
+const { State } = require("./modules/game/model");
 
 class Brain {
 
@@ -31,7 +31,6 @@ class Brain {
                 if (this.#canceling) { reject(); }
 
                 if (move) {
-                    //   move.turn = this.#game.Turn;
                     resolve(move);
                 }
                 else {
@@ -54,49 +53,30 @@ class Brain {
         this.#canceling = true;
     }
 
-    #suggestMove(previous) {
+    #suggestMove() {
 
         this.#depth++;
-
         const moves = this.#allPossibleMoves();
-        let allmoves = "";
-        for (const p of previous) {
-            allmoves += this.#game.MoveStr(p);
-        }
-        console.log(allmoves + ", possible moves:" + moves.length + ", depth:" + this.#depth);
-
         if (this.#depth > this.MAX_DEPTH) {
             return moves[0];
         }
-
         for (const move of moves) {
-
-
-            //  if (i == 11 && this.#depth == 1)
-            //      console.log(this.#game.MoveStr(move))
-            move.score = this.#scoreMove(new Array(...previous), move);
+            move.score = this.#scoreMove(move);
         }
-
-
-        if (this.#depth == 0)
-            console.log("*final score");
-
+        if (this.#depth == 0) { console.log("*final score"); }
         const finalResult = this.#findBestMove(moves);
         this.#depth--;
         return finalResult;
     }
 
     #findBestMove(moves) {
-        if (!moves || moves.length == 0)
-            return null;
-        //moves = moves.sort((a, b) => a.score > b.score);
+        if (!moves || moves.length == 0) { return null; }
         const max = Math.max(...moves.map(o => o.score));
         moves = moves.filter(o => o.score == max);
         if (this.#depth == 1) {
             console.log("after all the number of options:" + moves.length);
         }
         const rand = Math.floor(Math.random() * moves.length);
-        // console.log("highest score:" + max)
         return moves[rand];
     }
 
@@ -132,18 +112,12 @@ class Brain {
         return score;
     }
 
-    #scoreMove(previous, move) {
+    #scoreMove(move) {
 
         let score = this.#stateScore(move);
-        previous.push(move);
-        let allmoves = "";
-        for (const p of previous) {
-            allmoves += this.#game.MoveStr(p) + "(" + score + ")";
-        }
 
         this.#game.makeMove(move.source, move.target);
-        if (this.#game.Checkmate)
-            score = 9999;
+        if (this.#game.Checkmate) { score = 9999; }
 
         if (move.promotion) {
             switch (move.selectedPiece) {
@@ -163,22 +137,17 @@ class Brain {
         }
 
         if (this.#game.Moves.length > 50) { // todo: calculate the number of left pieces
-            if (this.#game.Check)
-                score += 3;
+            if (this.#game.Check) { score += 3; }
         }
 
         if (this.#depth < this.MAX_DEPTH) {
             if (this.#canceling) { return; }
-            const opponentMove = this.#suggestMove(previous);
+            const opponentMove = this.#suggestMove();
             if (opponentMove) {
                 score -= opponentMove.score;
             }
         }
-
         this.#game.undo();
-
-        // this.#analysis = false
-        console.log(allmoves + " final score=" + score);
         return score;
     }
 
@@ -208,23 +177,11 @@ class Brain {
         const stateStr = gameState;
         const findResult = await State.find({ state: stateStr });
         for await (const doc of findResult) {
-            //console.log(doc.move);
             options.push(JSON.parse(doc.move));
-
         }
         const rand = Math.floor(Math.random() * options.length);
         console.log(options.length + " moves found, chosing option #" + rand);
-
-
         return options.length > 0 ? options[rand] : null;
-
-        // let matches = this.#openings.filter(o => o.state == JSON.stringify(gameState));
-        // if (matches.length > 0) {
-        //     let rand = Math.floor(Math.random() * matches.length);
-        //     console.log("Choice is:" + matches[rand].name)
-        //     return JSON.parse(matches[rand].move);
-        // }
-        // return null;
     }
 
     #initOpenings() {
@@ -232,76 +189,69 @@ class Brain {
         this.#openings.push(
             {
                 name: "firstWhite",
-                state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},{"color":"white","pieceType":2},{"color":"white","pieceType":4}]],"turn":"white","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":0,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false}`,
-                move: `{"valid":true,"source":{"row":6,"col":4},"target":{"row":4,"col":4},"piece":{"color":"white","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}`
+                state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"white\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":0,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false}",
+                move: "{\"valid\":true,\"source\":{\"row\":6,\"col\":4},\"target\":{\"row\":4,\"col\":4},\"piece\":{\"color\":\"white\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}"
             }
         );
 
         this.#openings.push(
             {
                 name: "Sicilian defense",
-                state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,null,null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},{"color":"white","pieceType":2},{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":0,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":6,"col":4},"target":{"row":4,"col":4},"piece":{"color":"white","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-                move: `{"valid":true,"source":{"row":1,"col":2},"target":{"row":3,"col":2},"piece":{"color":"black","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+                state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,null,null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":0,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":6,\"col\":4},\"target\":{\"row\":4,\"col\":4},\"piece\":{\"color\":\"white\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+                move: "{\"valid\":true,\"source\":{\"row\":1,\"col\":2},\"target\":{\"row\":3,\"col\":2},\"piece\":{\"color\":\"black\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
             }
         );
 
         this.#openings.push(
             {
                 name: "Alekhine's Defense",
-                state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,null,null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},{"color":"white","pieceType":2},{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":0,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":6,"col":4},"target":{"row":4,"col":4},"piece":{"color":"white","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-                move: `{"valid":true,"source":{"row":0,"col":6},"target":{"row":2,"col":5},"piece":{"color":"black","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+                state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,null,null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":0,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":6,\"col\":4},\"target\":{\"row\":4,\"col\":4},\"piece\":{\"color\":\"white\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+                move: "{\"valid\":true,\"source\":{\"row\":0,\"col\":6},\"target\":{\"row\":2,\"col\":5},\"piece\":{\"color\":\"black\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
             }
         );
 
 
-
         this.#openings.push({
             name: "Common response to e4",
-            state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,null,null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},{"color":"white","pieceType":2},{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":0,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":6,"col":4},"target":{"row":4,"col":4},"piece":{"color":"white","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":1,"col":4},"target":{"row":3,"col":4},"piece":{"color":"black","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,null,null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":0,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":6,\"col\":4},\"target\":{\"row\":4,\"col\":4},\"piece\":{\"color\":\"white\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":1,\"col\":4},\"target\":{\"row\":3,\"col\":4},\"piece\":{\"color\":\"black\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
         });
         this.#openings.push({
             name: "Sicilian response to Kf3 v1",
-            state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},null,{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,{"color":"black","pieceType":0},null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,{"color":"white","pieceType":2},null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},null,{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":1,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":7,"col":6},"target":{"row":5,"col":5},"piece":{"color":"white","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":1,"col":3},"target":{"row":2,"col":3},"piece":{"color":"black","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},null,{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,{\"color\":\"black\",\"pieceType\":0},null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,{\"color\":\"white\",\"pieceType\":2},null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},null,{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":1,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":7,\"col\":6},\"target\":{\"row\":5,\"col\":5},\"piece\":{\"color\":\"white\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":1,\"col\":3},\"target\":{\"row\":2,\"col\":3},\"piece\":{\"color\":\"black\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
         });
 
         this.#openings.push({
             name: "Sicilian response to Kf3 v2",
-            state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},null,{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,{"color":"black","pieceType":0},null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,{"color":"white","pieceType":2},null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},null,{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":1,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":7,"col":6},"target":{"row":5,"col":5},"piece":{"color":"white","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":1,"col":4},"target":{"row":2,"col":4},"piece":{"color":"black","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},null,{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,{\"color\":\"black\",\"pieceType\":0},null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,{\"color\":\"white\",\"pieceType\":2},null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},null,{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":1,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":7,\"col\":6},\"target\":{\"row\":5,\"col\":5},\"piece\":{\"color\":\"white\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":1,\"col\":4},\"target\":{\"row\":2,\"col\":4},\"piece\":{\"color\":\"black\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
         });
 
         this.#openings.push({
             name: "Sicilian response to Kf3 v3",
-            state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},null,{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,{"color":"black","pieceType":0},null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,{"color":"white","pieceType":2},null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},null,{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":1,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":7,"col":6},"target":{"row":5,"col":5},"piece":{"color":"white","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":1,"col":6},"target":{"row":2,"col":6},"piece":{"color":"black","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},null,{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,{\"color\":\"black\",\"pieceType\":0},null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,{\"color\":\"white\",\"pieceType\":2},null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},null,{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":1,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":7,\"col\":6},\"target\":{\"row\":5,\"col\":5},\"piece\":{\"color\":\"white\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":1,\"col\":6},\"target\":{\"row\":2,\"col\":6},\"piece\":{\"color\":\"black\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
         });
 
         this.#openings.push({
             name: "Sicilian response to Kf3 v4 popular",
-            state: `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},null,{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,{"color":"black","pieceType":0},null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,{"color":"white","pieceType":2},null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},null,{"color":"white","pieceType":4}]],"turn":"black","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":1,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":7,"col":6},"target":{"row":5,"col":5},"piece":{"color":"white","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":0,"col":1},"target":{"row":2,"col":2},"piece":{"color":"black","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},null,{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,null,null,null,null,null,null],[null,null,{\"color\":\"black\",\"pieceType\":0},null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,{\"color\":\"white\",\"pieceType\":2},null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},null,{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"black\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":1,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":7,\"col\":6},\"target\":{\"row\":5,\"col\":5},\"piece\":{\"color\":\"white\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":0,\"col\":1},\"target\":{\"row\":2,\"col\":2},\"piece\":{\"color\":\"black\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}"
         });
 
         this.#openings.push({
             name: "Open Sicilian",
-            state: `{"board":[[{"color":"black","pieceType":4},null,{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},null,{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,{"color":"black","pieceType":2},null,null,null,null,null],[null,null,{"color":"black","pieceType":0},null,null,null,null,null],[null,null,null,null,{"color":"white","pieceType":0},null,null,null],[null,null,null,null,null,{"color":"white","pieceType":2},null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},null,{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},null,{"color":"white","pieceType":4}]],"turn":"white","capturedPiecesList":[],"check":false,"checkmate":false,"draw":false,"resigned":false,"whiteKingMoved":false,"blackKingMoved":false,"farWhiteRookMoved":false,"farBlackRookMoved":false,"nearWhiteRookMoved":false,"nearBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":2,"promoting":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"lastMove":{"valid":true,"source":{"row":0,"col":1},"target":{"row":2,"col":2},"piece":{"color":"black","pieceType":2},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"black","castling":false,"whitePlayerView":true}}`,
-            move: `{"valid":true,"source":{"row":6,"col":3},"target":{"row":4,"col":3},"piece":{"color":"white","pieceType":0},"promotion":false,"ennPassant":false,"capturedPiece":null,"hitSquare":null,"turn":"white","castling":false,"whitePlayerView":true}`
+            state: "{\"board\":[[{\"color\":\"black\",\"pieceType\":4},null,{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":5},{\"color\":\"black\",\"pieceType\":1},{\"color\":\"black\",\"pieceType\":3},{\"color\":\"black\",\"pieceType\":2},{\"color\":\"black\",\"pieceType\":4}],[{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},null,{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0},{\"color\":\"black\",\"pieceType\":0}],[null,null,{\"color\":\"black\",\"pieceType\":2},null,null,null,null,null],[null,null,{\"color\":\"black\",\"pieceType\":0},null,null,null,null,null],[null,null,null,null,{\"color\":\"white\",\"pieceType\":0},null,null,null],[null,null,null,null,null,{\"color\":\"white\",\"pieceType\":2},null,null],[{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},null,{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0},{\"color\":\"white\",\"pieceType\":0}],[{\"color\":\"white\",\"pieceType\":4},{\"color\":\"white\",\"pieceType\":2},{\"color\":\"white\",\"pieceType\":3},{\"color\":\"white\",\"pieceType\":5},{\"color\":\"white\",\"pieceType\":1},{\"color\":\"white\",\"pieceType\":3},null,{\"color\":\"white\",\"pieceType\":4}]],\"turn\":\"white\",\"capturedPiecesList\":[],\"check\":false,\"checkmate\":false,\"draw\":false,\"resigned\":false,\"whiteKingMoved\":false,\"blackKingMoved\":false,\"farWhiteRookMoved\":false,\"farBlackRookMoved\":false,\"nearWhiteRookMoved\":false,\"nearBlackRookMoved\":false,\"whitePlayerView\":true,\"fiftyMovesCounter\":2,\"promoting\":false,\"queensideWhiteRookMoved\":false,\"queensideBlackRookMoved\":false,\"kingsideWhiteRookMoved\":false,\"kingsideBlackRookMoved\":false,\"lastMove\":{\"valid\":true,\"source\":{\"row\":0,\"col\":1},\"target\":{\"row\":2,\"col\":2},\"piece\":{\"color\":\"black\",\"pieceType\":2},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"black\",\"castling\":false,\"whitePlayerView\":true}}",
+            move: "{\"valid\":true,\"source\":{\"row\":6,\"col\":3},\"target\":{\"row\":4,\"col\":3},\"piece\":{\"color\":\"white\",\"pieceType\":0},\"promotion\":false,\"ennPassant\":false,\"capturedPiece\":null,\"hitSquare\":null,\"turn\":\"white\",\"castling\":false,\"whitePlayerView\":true}"
         });
-
-
-
-
-
-
 
 
     }
 }
 
 function isServerSide() {
-    return !(typeof window != 'undefined' && window.document);
+    return !(typeof window != "undefined" && window.document);
 }
 
 if (isServerSide()) {

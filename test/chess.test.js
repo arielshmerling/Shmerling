@@ -3,7 +3,7 @@
 
 console.log("Tests run")
 //const { table } = require('console');
-const { ChessGame, Square, PAWN, QUEEN, BISHOP, Reasons } = require('../src/ChessGame')
+const { ChessGame } = require('../src/ChessGame')
 const { Brain } = require('../src/brain')
 const assert = require("assert");
 const initalState = `{"board":[[{"color":"black","pieceType":4},{"color":"black","pieceType":2},{"color":"black","pieceType":3},{"color":"black","pieceType":5},{"color":"black","pieceType":1},{"color":"black","pieceType":3},{"color":"black","pieceType":2},{"color":"black","pieceType":4}],[{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0},{"color":"black","pieceType":0}],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null],[{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0},{"color":"white","pieceType":0}],[{"color":"white","pieceType":4},{"color":"white","pieceType":2},{"color":"white","pieceType":3},{"color":"white","pieceType":5},{"color":"white","pieceType":1},{"color":"white","pieceType":3},{"color":"white","pieceType":2},{"color":"white","pieceType":4}]],"turn":"white","capturedPiecesList":[],"algebricNotation":"","check":false,"checkmate":false,"draw":false,"whiteKingMoved":false,"blackKingMoved":false,"queensideWhiteRookMoved":false,"queensideBlackRookMoved":false,"kingsideWhiteRookMoved":false,"kingsideBlackRookMoved":false,"whitePlayerView":true,"fiftyMovesCounter":0,"promoting":false}`
@@ -2028,7 +2028,7 @@ describe("Rgex", () => {
         const array = [...move.matchAll(moveRegex)][0];
         const p = {
             moveStr: array[0],
-            piece: PAWN,
+            piece: ChessGame.PAWN,
         }
 
         if (array[1]) { p.piece = array[1]; }

@@ -44,11 +44,12 @@ window.onload = function () {
     if (window.location.pathname == "/game" ||
         window.location.pathname == "/review") {
 
+        
+        // setDefaultTheme(pinkTheme);
+        // setDefaultTheme(lightGreenTheme);
+        // setDefaultTheme(colorfullTheme);
+        // setDefaultTheme(niceTheme);
         setDefaultTheme(blueTheme);
-        setDefaultTheme(pinkTheme);
-        setDefaultTheme(lightGreenTheme);
-        setDefaultTheme(colorfullTheme);
-        setDefaultTheme(niceTheme);
 
         game = new ChessGame();
 

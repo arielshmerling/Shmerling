@@ -11,38 +11,40 @@
                     <th>#</th>
                     <%obj=playerGames[0];i=1%>
                         <% for(const key in obj) { %>
-                            <% if(key!="Id" ) { %>
-                                <th>
+                            <% if(key !="Id" ) { %>
+                            <th>
 
-                                    <%=key %>
+                                <%=key %>
 
-                                </th>
-                                <%} %>
-                                    <% } %>
+                            </th>
+                            <% } %>
+                            <% } %>
+                                <th>D</th>
                 </tr>
                 <% for(const obj of playerGames){ %>
 
-                    <tr onclick=<%-`"window.location='/review?type=history&id=${obj.Id}'"`%>>
+                    <tr >
 
-                        <td><%=i++ %></td>
+                        <td onclick=<%-`"window.location='/review?type=history&id=${obj.Id}'"`%>><%=i++ %></td>
                             <% for(const key in obj) { %>
-                                <% if(key!=" Id" ) { %>
+                                <% if(key !="Id" ) { %>
                         <% if(key=="Reason" ) { %>
-                            <td class="alignLeft">
+                            <td class="alignLeft" onclick=<%-`"window.location='/review?type=history&id=${obj.Id}'"`%>>
                                 <% } else {%>
-                            <td>
+                            <td onclick=<%-`"window.location='/review?type=history&id=${obj.Id}'"`%>>
                                 <% } %>
                                     <%= obj[key] %>
                             </td>
                             <% } %>
                                 <% } %>
+                                    <td>
+                                        <form action="/list/<%=obj.Id%>?_method=delete" method="POST">
+                                            <a href="javascript:{}" onclick="this.closest('form').submit();return false;">Delete</a>
+                                        </form>
+                                    </td>
                     </tr>
                     <% } %>
             </table>
-
-
-
-
         </section>
 
 
@@ -55,11 +57,9 @@
                     <th>#</th>
                     <%obj=pgn[0];i=1%>
                         <% for(const key in obj) { %>
-                            <% if(key!="Id" ) { %>
+                            <% if(key != "Id") { %>
                                 <th>
-
                                     <%=key %>
-
                                 </th>
                                 <%} %>
                                     <% } %>
@@ -74,15 +74,13 @@
                             </a>
                         </td>
                         <% for(const key in obj) { %>
-                            <% if(key!=" Id" ) { %>
-                        <% if(key=="Reason" ) { %>
-                            <td class="alignLeft">
-                                <% } else {%>
+                           
                             <td>
-                                <% } %>
-                                    <%= obj[key] %>
-                            </td>
+                                <% if(key!="Id" ) { %>
+                        <%= obj[key] %>
                             <% } %>
+                                </td>
+
                                 <% } %>
                     </tr>
                     <% } %>

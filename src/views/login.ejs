@@ -1,16 +1,16 @@
 <%- include('partials/header') %>
     <%- include('partials/topbarDefault') %>
         <section id="main">
-            <form method="post" action="/login">
+            <form method="post" action="/login" class=".validated-form" novalidate>
                 <h1 style="color: #550000">
                     <%=errorMessage%>
                 </h1>
                 <label for="username">Username:</label>
-                <input id="username" username="username" name="username" autofocus autocomplete>
+                <input id="username" username="username" name="username" autofocus autocomplete required>
                 </label>
                 <br><br>
                 <label for="password">Password:</label>
-                <input id="password" name="password" type="password" autocomplete>
+                <input id="password" name="password" type="password" autocomplete required>
                 </label>
                 <br><br>
                 <button>Login</button>

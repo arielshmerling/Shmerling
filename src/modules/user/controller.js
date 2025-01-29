@@ -1,9 +1,10 @@
 
+const catchAsync = require("../../utils/catchAsync");
 const userService = require("./service");
+const { validate } = require("../../serverValidations");
 
-exports.showLoginPage = async (req, res) => {
+exports.showLoginPage = (req, res) => {
 
-    console.log("showLoginPage");
     const { f } = req.query;
     let errorMessage = "";
     if (f == "error") {
@@ -20,7 +21,8 @@ exports.logout = async (req, res) => {
     res.redirect("/login"); // or home
 };
 
-exports.login = async (req, res) => {
+exports.login = catchAsync(async (req, res) => {
+    validate(req.body, "credentials"); 
     const { username, password } = req.body;
     const foundUser = await userService.findUser(username, password);
     if (foundUser) {
@@ -33,16 +35,16 @@ exports.login = async (req, res) => {
         console.log("login failed");
         res.redirect("/login?f=error");
     }
-};
+});
 
 exports.showRegistrationPage = async (req, res) => {
     res.render("register");
 };
 
-exports.register = async (req, res) => {
+exports.register = catchAsync(async (req, res) => {
     const { username, password } = req.body;
     const user = await userService.registerNewUser(username, password);
     req.session.user_id = user._id;
     req.session.user_name = username;
     res.redirect("/lobby");
-};
+});

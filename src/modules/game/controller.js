@@ -4,18 +4,21 @@
  * @module GameManagement
  */
 
-
+const { validate } = require("../../serverValidations");
 const gameService = require("./service");
 const gamesManagerService = require("../gamesManager/service");
 const { Game } = require("./model");
 const { Player } = require("./Player");
+//const ExpressError = require("../../utils/ExpressError");
+const catchAsync = require("../../utils/catchAsync");
 
 
 /**
  * 
  * Handles requests related to reviewing games.
  */
-exports.review = async (req, res) => {
+exports.review = catchAsync(async (req, res) => {
+    validate(req.query, "review");
     const { id } = req.query; //type [history , pgn]
     req.session.gameId = id;
 
@@ -27,22 +30,22 @@ exports.review = async (req, res) => {
     }
 
     res.render("game", { username: req.session.user_name });
-};
+});
 
-exports.getGameInfo = async (req, res) => {
+exports.getGameInfo = catchAsync(async (req, res) => {
+
     const { id } = req.query;
     const gameId = id || req.session.gameId;
+    validate({ id: gameId }, "id");
 
-    const game = gamesManagerService.getGameInfo(gameId);
+    const game = gamesManagerService.getGameById(gameId);
     let clientDate = {};
     if (game.status == "reJoining") {
         await rejoinGame(game, req.session.user_name, req.session.user_id);
     }
-
     clientDate = createGameInfo(game, req.session.user_name, req.session.user_id);
-
     res.send(clientDate);
-};
+});
 
 function createGameInfo(game, gameName, userId) {
     const clientDate = {
@@ -94,8 +97,6 @@ function calculateTimer(game, isWhite) {
     else {
         return game.chessGame.GameTimeLength;
     }
-
-
 }
 
 async function rejoinGame(game, userName, userId) {
@@ -122,24 +123,27 @@ exports.getGameMoves = async (req, res) => {
 
 
 exports.rematch = async (req, res) => {
-    console.log(req.body);
+    validate(req.body, "id"); 
     const { id } = req.body;
     req.session.gameId = id;
     res.send("OK");
     console.log("update new game id for rematch: " + id);
 };
 
-exports.startGame = async (req, res) => {
-    const { gameType } = req.query;
+exports.startGame = catchAsync(async (req, res) => {
+
+    validate(req.query, "gameType");
+    const gameTypeInt = parseInt(req.query.gameType);
     const username = req.session.user_name;
     const userId = req.session.user_id;
-    const gameTypeInt = parseInt(gameType);
+
     let gameDoc;
     let game;
 
     // Game is in progress - for example, user refresh the game page
     game = gamesManagerService.findGameByStatus(gameTypeInt, userId, "in progress");
     if (game) {
+        req.session.gameId = game.gameId;
         res.render("game", { username });
         return;
     }
@@ -189,7 +193,7 @@ exports.startGame = async (req, res) => {
     req.session.gameId = game.gameId;
     registerEvents(game);
     res.render("game", { username });
-};
+});
 
 function registerEvents(game) {
 

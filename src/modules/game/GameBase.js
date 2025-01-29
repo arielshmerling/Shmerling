@@ -1,4 +1,5 @@
 
+const { validate } = require("../../serverValidations");
 const { ChessGame } = require("../../ChessGame");
 const { Player } = require("./Player");
 const { v4: uuidv4 } = require("uuid");
@@ -68,10 +69,8 @@ class GameBase {
         await this.raiseEvent(this.OnGameOver, { game: this, reason: this.chessGame.GameOverReason });
 
         const resultMove = this.chessGame.ResultMove;
-        if (this.moves.length > 0)
-            {resultMove.moveTime = this.moves[this.moves.length - 1].moveTime;}
-        else
-            {resultMove.moveTime = this.chessGame.GameTimeLength;}
+        if (this.moves.length > 0) { resultMove.moveTime = this.moves[this.moves.length - 1].moveTime; }
+        else { resultMove.moveTime = this.chessGame.GameTimeLength; }
         this.moves.push(resultMove);
         await this.raiseEvent(this.OnMove, { game: this, move: resultMove });
     }
@@ -144,8 +143,7 @@ class GameBase {
             gameId: this.gameId,
         };
 
-        if (channel)
-            {channel.send(JSON.stringify(message));}
+        if (channel) { channel.send(JSON.stringify(message)); }
 
     };
 
@@ -167,9 +165,9 @@ class GameBase {
 
         const playerChannel = this.getChannel(isWhite);
 
-        if (playerChannel)
-            {if (playerChannel.readyState == playerChannel.OPEN)
-                {playerChannel.send(JSON.stringify(message));}}
+        if (playerChannel) {
+            if (playerChannel.readyState == playerChannel.OPEN) { playerChannel.send(JSON.stringify(message)); }
+        }
 
     }
     createRemtach(isWhite, callback) {
@@ -196,7 +194,9 @@ class GameBase {
         });
 
         const resultMove = this.chessGame.ResultMove;
-        resultMove.moveTime = this.moves[this.moves.length - 1].moveTime;
+        if (this.moves.length > 0) {
+            resultMove.moveTime = this.moves[this.moves.length - 1].moveTime;
+        }
         this.moves.push(resultMove);
         await this.raiseEvent(this.OnMove, { game: this, move: resultMove });
 
@@ -215,23 +215,23 @@ class GameBase {
 
     onMessageReceived = (recivedData) => {
         const msg = JSON.parse(recivedData);
+        validate(msg, "webSocketsMessage");
         this.messageProcessor.process(this, msg);
     };
 
     onConnectionClosed = () => { };
 
     closeGame = () => {
-        if (this.whitePlayer)
-            {if (this.whitePlayer.channel)
-                {this.whitePlayer.channel.off("message", this.onMessageReceived);}}
-        if (this.blackPlayer)
-            {if (this.blackPlayer.channel)
-                {this.blackPlayer.channel.off("message", this.onMessageReceived);}}
+        if (this.whitePlayer) {
+            if (this.whitePlayer.channel) { this.whitePlayer.channel.off("message", this.onMessageReceived); }
+        }
+        if (this.blackPlayer) {
+            if (this.blackPlayer.channel) { this.blackPlayer.channel.off("message", this.onMessageReceived); }
+        }
     };
 
     async raiseEvent(event, param) {
-        if (event != null)
-            {await event(param);}
+        if (event != null) { await event(param); }
     }
 
 

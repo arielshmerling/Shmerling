@@ -2,7 +2,7 @@
 const pgnReader = require("./pgnReader");
 const { ChessGame } = require("../../ChessGame");
 const { Game, State } = require("../game/model");
-
+const catchAsync = require("../../utils/catchAsync");
 
 const games = [];
 let pgnGames = [];
@@ -20,7 +20,8 @@ exports.GameTypes = {
  * @param {Object} game - The game object to be saved, containing information such as game type, status, and player names.
  * @returns {Promise<Object>} - DB gameDoc. A promise resolving to the saved game document in the database, which includes properties such as `id`, `createdAt`, `updatedAt`.
  */
-exports.storeGameInDB = async (game) => {
+exports.storeGameInDB = catchAsync(async (game) => {
+
     const gameDoc = new Game({
         createBy: game.createdBy.userName,
         createByUserId: game.createdBy.userId,
@@ -32,7 +33,7 @@ exports.storeGameInDB = async (game) => {
 
     await gameDoc.save();
     return gameDoc;
-};
+});
 
 
 /**
@@ -41,10 +42,10 @@ exports.storeGameInDB = async (game) => {
  * @param {string} gameId - The unique ID of the game to be retrieved, which corresponds to the `gameId` property in the Game model.
  * @returns {Promise<Object>} A promise resolving to the retrieved game document in the database.
  */
-exports.findGameInDB = async (game) => {
+exports.findGameInDB = catchAsync(async (game) => {
     const gameDoc = await Game.findById(game.gameId);
     return gameDoc;
-};
+});
 
 /**
  * Retrieves a list of recent games played by a specific user.
@@ -52,7 +53,7 @@ exports.findGameInDB = async (game) => {
  * @param {string} username - The username of the user whose recent games are to be retrieved.
  * @returns {Promise<Object[]>} A promise resolving to an array of game objects, each containing information about a recent game played by the specified user.
  */
-exports.getRecentGames = async (username, amount) => {
+exports.getRecentGames = catchAsync(async (username, amount) => {
 
     const gameDocs = await Game.find(
         {
@@ -64,18 +65,18 @@ exports.getRecentGames = async (username, amount) => {
         .limit(amount);
     const playerGames = this.getPlayerGames(gameDocs);
     return playerGames;
-};
+});
 
 /**
  * Retrieves an array of games in PGN (Portable Game Notation) format.
  *
  * @returns {Promise<Object[]>} A promise resolving to an array of game objects, each containing information about a game played according to PGN notation rules.
  */
-exports.getPGNGames = async () => {
+exports.getPGNGames = catchAsync(async () => {
     const files = await this.getPGNFiles();
     pgnGames = await this.readPGNGames(files);
     return pgnGames;
-};
+});
 
 
 /**
@@ -107,7 +108,7 @@ exports.getGameById = (id) => {
  *
  * @throws {Error} If no matching record is found in the database for the provided ID.
  */
-exports.findReviewGame = async (id, userName) => {
+exports.findReviewGame = catchAsync(async (id, userName) => {
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
         const gameDoc = await Game.findOne({ _id: id });
         const gameInfo = {
@@ -137,15 +138,12 @@ exports.findReviewGame = async (id, userName) => {
             return gameInfo;
         }
     }
-};
-
-exports.getGameInfo = (id) => {
-
-    const game = games.filter(game => game.gameId == id)[0];
-    return game;
+});
 
 
-};
+exports.deleteGame = catchAsync(async (id) => {
+    await Game.findByIdAndDelete(id);
+});
 
 exports.AddGame = (serverGame) => {
     games.push(serverGame);
@@ -230,7 +228,7 @@ exports.getPlayerGames = (gameDocs) => {
 };
 
 
-exports.getPGNFiles = async () => {
+exports.getPGNFiles = catchAsync(async () => {
     const fs = require("fs").promises;
     const path = require("path");
     const dir = path.join(__dirname, "./pgn/");
@@ -240,9 +238,9 @@ exports.getPGNFiles = async () => {
         return res;
     }));
     return Array.prototype.concat(...files);
-};
+});
 
-exports.readPGNGames = async (files) => {
+exports.readPGNGames = catchAsync(async (files) => {
 
     for (let i = 0; i < files.length; i++) {
         console.log("Adding games from:" + files[i]);
@@ -252,10 +250,10 @@ exports.readPGNGames = async (files) => {
         console.log(`total ${pgnGames.length} games`);
         return pgnGames;
     }
-};
+});
 
 
-exports.addGamesToDB = async (games) => {
+exports.addGamesToDB = catchAsync(async (games) => {
 
     let gameNum = 0;
     let game;
@@ -301,4 +299,4 @@ exports.addGamesToDB = async (games) => {
     }
 
     console.log(gameNum + " games added");
-};
+});

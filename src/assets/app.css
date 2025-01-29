@@ -822,8 +822,17 @@ A {
     max-height: 150px;
     border: 0px solid Black;
     width: 100%;
-    border-spacing: 0px 0;
-    color: var(--darker);
+    border-spacing: 0px 0;   
+};
+
+table.movesTable a:link,
+a:visited {
+    color: var(--light);
+}
+
+table.movesTable a:hover,
+a:active {
+    color: var(--dark);
 }
 
 .gamesTable {
@@ -862,19 +871,8 @@ table.gamesTable tr:hover {
 
 
 
-.movesTable {
-    color: var(--dark);
-}
 
-table.movesTable a:link,
-a:visited {
-    color: var(--light);
-}
 
-table.movesTable a:hover,
-a:active {
-    color: var(--dark);
-}
 
 tr {
     border: 0px solid var(--darker);
@@ -919,8 +917,9 @@ th {
 }
 
 .selectedMove {
-    background-color: var(--light);
-    color: var(--dark);
+    background-color: rgb(0, 94, 255);
+      /* var(--light); */
+    color: white;
 }
 
 .turnClock {
@@ -932,3 +931,4 @@ th {
 .lobbyOptionsContainers {
     background-color: var(--semiLight)
 }
+
